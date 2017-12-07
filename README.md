@@ -3,7 +3,7 @@ An API wrapper for DigitalOcean's Spaces object storage designed for easy use.
 
 &nbsp;
 
-### Connecting:
+### Connecting
 ```php
 require_once("spaces.php");
 
@@ -13,5 +13,5 @@ $secret = "EXAMPLE_SECRET";
 $space = new SpacesConnect($key, $secret);
 ```
 
-All available configurations: <br>
-SpacesConnect( REQUIRED KEY, REQUIRED SECRET, OPTIONAL SPACE's NAME, OPTIONAL REGION, OPTION HOST DOMAIN );
+All available configurations: 
+###### SpacesConnect( REQUIRED KEY, REQUIRED SECRET, OPTIONAL SPACE's NAME, OPTIONAL REGION, OPTION HOST DOMAIN );
