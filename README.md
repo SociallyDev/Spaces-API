@@ -97,6 +97,8 @@ $space->PutObjectACL($file_name, $acl_info_array);
 &nbsp;
 &nbsp;
 &nbsp;
+&nbsp;
+&nbsp;
 
 
 ### Creating Spaces
