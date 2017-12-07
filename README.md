@@ -27,6 +27,8 @@ $optional_file_name = "image.png";
 
 $space->uploadFile($path_to_file, $optional_file_name);
 
+
+
 $download_file = "image.png";
 $save_as = "/folder/downloaded-image.png";
 
