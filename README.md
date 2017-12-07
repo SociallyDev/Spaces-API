@@ -3,8 +3,6 @@ An API wrapper for DigitalOcean's Spaces object storage designed for easy use.
 
 &nbsp;
 
-
-
 ### Connecting
 ```php
 require_once("spaces.php");
@@ -25,9 +23,6 @@ All available options:
 
 
 
-
-
-
 ### Uploading/Downloading Files
 ```php
 $path_to_file = "folder/my-image.png";
@@ -38,16 +33,13 @@ $space->uploadFile($path_to_file, $optional_file_name);
 
 
 $download_file = "image.png";
-$save_as = "/folder/downloaded-image.png";
+$save_as = "folder/downloaded-image.png";
 
 $space->downloadFile($download_file, $save_as);
 ```
 All available options: 
 ###### uploadFile( REQUIRED PATH TO FILE, OPTIONAL NAME TO SAVE FILE AS);
 ###### downloadFile( REQUIRED FILE TO DOWNLOAD, REQUIRED LOCATION TO SAVE FILE);
-
-
-
 
 
 
@@ -68,6 +60,37 @@ All available options:
 
 
 
+### Other File APIs
+```php
+//List all files and folders
+$files = $space->listObjects();
+
+
+//Check if a file/folder by that name already exists. True/False.
+$space->doesObjectExist($file_name);
+
+
+//Pull information about a single object.
+$file_info = $space->getObject($file_name);
+
+
+//Delete a file/folder.
+$space->deleteObject($file_name);
+
+
+//Upload a complete directory instead of a single file.
+$space->uploadDirectory($path_to_directory, $key_prefix);
+
+
+//Pull Access Control List information.
+$acl = $space-listObjectACL($file_name);
+
+
+//Update Access Control List information.
+$space->PutObjectACL($file_name, $acl_info_array);
+
+```
+
 
 
 
@@ -83,6 +106,7 @@ $space->createSpace($new_space);
 ```
 All available options: 
 ###### createSpace( REQUIRED SPACE NAME, OPTIONAL REGION FOR SPACE);
+
 
 
 
