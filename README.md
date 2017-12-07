@@ -20,6 +20,9 @@ All available options:
 
 
 
+
+
+
 ### Uploading/Downloading Files
 ```php
 $path_to_file = "folder/my-image.png";
@@ -39,6 +42,11 @@ All available options:
 ###### downloadFile( REQUIRED FILE TO DOWNLOAD, REQUIRED LOCATION TO SAVE FILE);
 
 
+
+
+
+
+
 ### Creating Temporary Links
 ```php
 $file = "image.png";
@@ -48,6 +56,10 @@ $link = $space->CreateTemporaryURL($file, $valid_for);
 ```
 All available options: 
 ###### CreateTemporaryURL( REQUIRED FILE NAME, OPTIONAL TIME LINK IS VALID FOR);
+
+
+
+
 
 
 
