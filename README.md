@@ -23,10 +23,9 @@ All available options:
 
 ### Uploading/Downloading Files
 ```php
-$path_to_file = "folder/my-image.png";
-$optional_file_name = "image.png";
+$path_to_file = "folder/image.png";
 
-$space->uploadFile($path_to_file, $optional_file_name);
+$space->uploadFile($path_to_file);
 
 
 
