@@ -84,8 +84,16 @@ class SpacesConnect {
         return $this->space;
     }
 
+    function downloadSpaceToDirectory($pathToDirectory) {
+        $this->client->downloadBucket($pathToDirectory, $this->space);
+    }
+
     function destroyThisSpace() {
-        $this->setSpace(NULL);
+        $objects = $this->listObjects();
+        foreach ($objects as $value) {
+          $key = $value["Key"];
+          $this->deleteObject($key);
+        }
         $this->client->deleteBucket(array('Bucket' => $this->space));
         $this->client->waitUntil('BucketNotExists', array('Bucket' => $this->space));
     }
@@ -154,9 +162,6 @@ class SpacesConnect {
         $this->client->uploadDirectory($directory, $this->space, $keyPrefix);
     }
 
-    function downloadSpaceToDirectory($pathToDirectory) {
-        $this->client->downloadBucket($pathToDirectory, $this->space);
-    }
 
 
 
