@@ -8,9 +8,9 @@ require_once("spaces.php");
 $key = "EXAMPLE_KEY";
 $secret = "EXAMPLE_SECRET";
 
-$space_name_optional = "my-space";
+$space_name = "my-space";
 
-$space = new SpacesConnect($key, $secret, $space_name_optional);
+$space = new SpacesConnect($key, $secret, $space_name);
 ```
 
 All available options: 
