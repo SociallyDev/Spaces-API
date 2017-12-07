@@ -150,7 +150,7 @@ class SpacesConnect {
         return $result;
     }
 
-    function downloadFile($fileName, $destinationPath = "") {
+    function downloadFile($fileName, $destinationPath) {
         $result = $this->client->getObject(array(
             'Bucket' => $this->space,
             'Key'    => $fileName,
@@ -189,7 +189,7 @@ class SpacesConnect {
        return $result;
     }
 
-    function listBucketACL() {
+    function listSpaceACL() {
        $acl = $this->client->getBucketAcl([
          'Bucket' => $this->space,
         ]);
@@ -197,7 +197,7 @@ class SpacesConnect {
     }
 
 
-    function PutBucketACL($params) {
+    function PutSpaceACL($params) {
        $acl = $s3Client->putBucketAcl($params);
         return $acl;
     }
