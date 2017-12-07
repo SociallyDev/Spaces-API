@@ -10,9 +10,9 @@ require_once("spaces.php");
 $key = "EXAMPLE_KEY";
 $secret = "EXAMPLE_SECRET";
 
-$space = "my-space";
+$space_name_optional = "my-space";
 
-$space = new SpacesConnect($key, $secret, $space);
+$space = new SpacesConnect($key, $secret, $space_name_optional);
 ```
 
 All available options: 
@@ -109,5 +109,49 @@ All available options:
 
 
 
+### Switching Spaces
+```php
+$new_space = "my-new-space";
 
+$space->setSpace($new_space);
+```
+All available options: 
+###### setSpace( REQUIRED SPACE NAME, OPTIONAL REGION FOR SPACE, OPTIONAL HOST);
+
+
+
+
+### Other Spaces APIs
+```php
+//List all Spaces available in account.
+$spaces = $space->listSpaces();
+
+
+//Delete a Space.
+$space->destroyThisSpace();
+
+
+//Download whole Space to a folder.
+$space->downloadSpaceToDirectory($directory_to_download_to);
+
+
+//Get the name of the current Space.
+$space_name = $space->getSpaceName();
+
+
+//Pull the CORS policy of the Space.
+$cors = $space->listCORS();
+
+
+//Update the CORS policy of the Space.
+$space->putCORS($new_policy);
+
+
+//Pull the Access Control List information of the Space.
+$acl = $space->listSpaceACL();
+
+
+//Update the Access Control List information of the Space.
+$space->PutSpaceACL($new_acl);
+```
 
