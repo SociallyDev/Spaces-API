@@ -14,7 +14,7 @@ $space = new SpacesConnect($key, $secret, $space_name);
 ```
 
 All available options: 
-###### SpacesConnect(REQUIRED KEY, REQUIRED SECRET, OPTIONAL SPACE's NAME, OPTIONAL REGION, OPTION HOST DOMAIN);
+###### SpacesConnect(REQUIRED KEY, REQUIRED SECRET, OPTIONAL SPACE's NAME, OPTIONAL REGION, OPTIONAL HOST);
 
 
 
