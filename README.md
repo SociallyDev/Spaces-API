@@ -13,5 +13,5 @@ $secret = "EXAMPLE_SECRET";
 $space = new SpacesConnect($key, $secret);
 ```
 
-All available configurations: <br>
+All available configurations:
 ###### SpacesConnect( REQUIRED KEY, REQUIRED SECRET, OPTIONAL SPACE's NAME, OPTIONAL REGION, OPTION HOST DOMAIN );
