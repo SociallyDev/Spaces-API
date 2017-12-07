@@ -3,6 +3,8 @@ An API wrapper for DigitalOcean's Spaces object storage designed for easy use.
 
 &nbsp;
 
+
+
 ### Connecting
 ```php
 require_once("spaces.php");
@@ -17,6 +19,9 @@ $space = new SpacesConnect($key, $secret, $space);
 
 All available options: 
 ###### SpacesConnect( REQUIRED KEY, REQUIRED SECRET, OPTIONAL SPACE's NAME, OPTIONAL REGION, OPTION HOST DOMAIN );
+
+
+
 
 
 
@@ -47,6 +52,9 @@ All available options:
 
 
 
+
+
+
 ### Creating Temporary Links
 ```php
 $file = "image.png";
@@ -56,6 +64,10 @@ $link = $space->CreateTemporaryURL($file, $valid_for);
 ```
 All available options: 
 ###### CreateTemporaryURL( REQUIRED FILE NAME, OPTIONAL TIME LINK IS VALID FOR);
+
+
+
+
 
 
 
