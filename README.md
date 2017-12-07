@@ -14,7 +14,7 @@ $space = new SpacesConnect($key, $secret, $space_name_optional);
 ```
 
 All available options: 
-###### SpacesConnect( REQUIRED KEY, REQUIRED SECRET, OPTIONAL SPACE's NAME, OPTIONAL REGION, OPTION HOST DOMAIN );
+###### SpacesConnect(REQUIRED KEY, REQUIRED SECRET, OPTIONAL SPACE's NAME, OPTIONAL REGION, OPTION HOST DOMAIN);
 
 
 
@@ -36,8 +36,8 @@ $save_as = "folder/downloaded-image.png";
 $space->downloadFile($download_file, $save_as);
 ```
 All available options: 
-###### uploadFile( REQUIRED PATH TO FILE, OPTIONAL NAME TO SAVE FILE AS);
-###### downloadFile( REQUIRED FILE TO DOWNLOAD, REQUIRED LOCATION TO SAVE FILE);
+###### uploadFile(REQUIRED PATH TO FILE, OPTIONAL NAME TO SAVE FILE AS);
+###### downloadFile(REQUIRED FILE TO DOWNLOAD, REQUIRED LOCATION TO SAVE FILE);
 
 
 
@@ -53,7 +53,7 @@ $valid_for = "1 day";
 $link = $space->CreateTemporaryURL($file, $valid_for);
 ```
 All available options: 
-###### CreateTemporaryURL( REQUIRED FILE NAME, OPTIONAL TIME LINK IS VALID FOR);
+###### CreateTemporaryURL(REQUIRED FILE NAME, OPTIONAL TIME LINK IS VALID FOR);
 
 
 &nbsp;
@@ -108,7 +108,7 @@ $new_space = "my-new-space";
 $space->createSpace($new_space);
 ```
 All available options: 
-###### createSpace( REQUIRED SPACE NAME, OPTIONAL REGION FOR SPACE);
+###### createSpace(REQUIRED SPACE NAME, OPTIONAL REGION FOR SPACE);
 
 
 &nbsp;
@@ -120,7 +120,7 @@ $new_space = "my-new-space";
 $space->setSpace($new_space);
 ```
 All available options: 
-###### setSpace( REQUIRED SPACE NAME, OPTIONAL REGION FOR SPACE, OPTIONAL HOST);
+###### setSpace(REQUIRED SPACE NAME, OPTIONAL REGION FOR SPACE, OPTIONAL HOST);
 
 
 &nbsp;
