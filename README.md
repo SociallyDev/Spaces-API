@@ -1,8 +1,6 @@
 # Spaces-API
 An API wrapper for DigitalOcean's Spaces object storage designed for easy use. 
 
-&nbsp;
-
 ### Connecting
 ```php
 require_once("spaces.php");
@@ -20,7 +18,7 @@ All available options:
 
 
 
-
+&nbsp;
 
 
 ### Uploading/Downloading Files
@@ -44,7 +42,7 @@ All available options:
 
 
 
-
+&nbsp;
 
 
 ### Creating Temporary Links
@@ -58,7 +56,8 @@ All available options:
 ###### CreateTemporaryURL( REQUIRED FILE NAME, OPTIONAL TIME LINK IS VALID FOR);
 
 
-
+&nbsp;
+&nbsp;
 
 ### Other File APIs
 ```php
@@ -95,7 +94,9 @@ $space->PutObjectACL($file_name, $acl_info_array);
 
 
 
-
+&nbsp;
+&nbsp;
+&nbsp;
 
 
 ### Creating Spaces
@@ -108,6 +109,7 @@ All available options:
 ###### createSpace( REQUIRED SPACE NAME, OPTIONAL REGION FOR SPACE);
 
 
+&nbsp;
 
 ### Switching Spaces
 ```php
@@ -119,7 +121,8 @@ All available options:
 ###### setSpace( REQUIRED SPACE NAME, OPTIONAL REGION FOR SPACE, OPTIONAL HOST);
 
 
-
+&nbsp;
+&nbsp;
 
 ### Other Spaces APIs
 ```php
