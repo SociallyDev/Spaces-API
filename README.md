@@ -9,8 +9,9 @@ $key = "EXAMPLE_KEY";
 $secret = "EXAMPLE_SECRET";
 
 $space_name = "my-space";
+$region = "nyc3";
 
-$space = new SpacesConnect($key, $secret, $space_name);
+$space = new SpacesConnect($key, $secret, $space_name, $region);
 ```
 
 All available options: 
