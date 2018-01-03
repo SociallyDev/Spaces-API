@@ -24,9 +24,9 @@ All available options:
 
 ### Uploading/Downloading Files
 ```php
-$path_to_file = "folder/image.png";
+$path_to_file = "image.png";
 
-$space->uploadFile($path_to_file);
+$space->uploadFile($path_to_file, "public");
 
 
 
@@ -36,14 +36,30 @@ $save_as = "folder/downloaded-image.png";
 $space->downloadFile($download_file, $save_as);
 ```
 All available options: 
-###### uploadFile(REQUIRED PATH TO FILE, OPTIONAL NAME TO SAVE FILE AS);
-###### downloadFile(REQUIRED FILE TO DOWNLOAD, REQUIRED LOCATION TO SAVE FILE);
+###### uploadFile(REQUIRED PATH TO FILE, OPTIONAL PRIVACY (public|private) OPTIONAL NAME TO SAVE FILE AS);
+###### downloadFile(REQUIRED FILE TO DOWNLOAD, REQUIRED LOCATION TO SAVE IN);
 
 
 
 
 &nbsp;
 
+### Changing Privacy Settings
+```php
+$file = "image.png";
+
+$space->makePublic($file);
+$space->makePrivate($file);
+
+```
+All available options: 
+###### makePublic(REQUIRED PATH TO FILE);
+###### makePrivate(REQUIRED PATH TO FILE);
+
+
+
+
+&nbsp;
 
 ### Creating Temporary Links
 ```php
@@ -160,3 +176,28 @@ $acl = $space->listSpaceACL();
 $space->PutSpaceACL($new_acl);
 ```
 
+
+
+
+### Handling Errors
+
+```php
+try {
+   $space->createSpace("dev");
+} catch (\Exception $e) {
+  $error = $space->GetError($e);
+
+   //Error management code.
+   echo "<pre>";
+   print_r($error);
+   /*
+   EG:
+   Array (
+    [message] => Bucket already exists
+    [code] => BucketAlreadyExists
+    [type] => client
+    [http_code] => 409
+   )
+   */
+}
+```
