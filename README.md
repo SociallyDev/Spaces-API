@@ -183,7 +183,7 @@ $space->PutSpaceACL($new_acl);
 
 ```php
 try {
-   $space->createSpace("dev");
+   $space->CreateSpace("dev");
 } catch (\SpacesAPIException $e) {
   $error = $e->GetError();
 
