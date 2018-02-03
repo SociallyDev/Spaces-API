@@ -26,18 +26,18 @@ All available options:
 ```php
 $path_to_file = "image.png";
 
-$space->uploadFile($path_to_file, "public");
+$space->UploadFile($path_to_file, "public");
 
 
 
 $download_file = "image.png";
 $save_as = "folder/downloaded-image.png";
 
-$space->downloadFile($download_file, $save_as);
+$space->DownloadFile($download_file, $save_as);
 ```
 All available options: 
-###### uploadFile(REQUIRED PATH TO FILE, OPTIONAL PRIVACY (public|private) OPTIONAL NAME TO SAVE FILE AS);
-###### downloadFile(REQUIRED FILE TO DOWNLOAD, REQUIRED LOCATION TO SAVE IN);
+###### UploadFile(REQUIRED PATH TO FILE, OPTIONAL PRIVACY (public|private) OPTIONAL NAME TO SAVE FILE AS);
+###### DownloadFile(REQUIRED FILE TO DOWNLOAD, REQUIRED LOCATION TO SAVE IN);
 
 
 
@@ -48,13 +48,13 @@ All available options:
 ```php
 $file = "image.png";
 
-$space->makePublic($file);
-$space->makePrivate($file);
+$space->MakePublic($file);
+$space->MakePrivate($file);
 
 ```
 All available options: 
-###### makePublic(REQUIRED PATH TO FILE);
-###### makePrivate(REQUIRED PATH TO FILE);
+###### MakePublic(REQUIRED PATH TO FILE);
+###### MakePrivate(REQUIRED PATH TO FILE);
 
 
 
@@ -78,27 +78,27 @@ All available options:
 ### Other File APIs
 ```php
 //List all files and folders
-$files = $space->listObjects();
+$files = $space->ListObjects();
 
 
 //Check if a file/folder by that name already exists. True/False.
-$space->doesObjectExist($file_name);
+$space->DoesObjectExist($file_name);
 
 
 //Pull information about a single object.
-$file_info = $space->getObject($file_name);
+$file_info = $space->GetObject($file_name);
 
 
 //Delete a file/folder.
-$space->deleteObject($file_name);
+$space->DeleteObject($file_name);
 
 
 //Upload a complete directory instead of a single file.
-$space->uploadDirectory($path_to_directory, $key_prefix);
+$space->UploadDirectory($path_to_directory, $key_prefix);
 
 
 //Pull Access Control List information.
-$acl = $space-listObjectACL($file_name);
+$acl = $space-ListObjectACL($file_name);
 
 
 //Update Access Control List information.
@@ -121,10 +121,10 @@ $space->PutObjectACL($file_name, $acl_info_array);
 ```php
 $new_space = "my-new-space";
 
-$space->createSpace($new_space);
+$space->CreateSpace($new_space);
 ```
 All available options: 
-###### createSpace(REQUIRED SPACE NAME, OPTIONAL REGION FOR SPACE);
+###### CreateSpace(REQUIRED SPACE NAME, OPTIONAL REGION FOR SPACE);
 
 
 &nbsp;
@@ -133,10 +133,10 @@ All available options:
 ```php
 $new_space = "my-new-space";
 
-$space->setSpace($new_space);
+$space->SetSpace($new_space);
 ```
 All available options: 
-###### setSpace(REQUIRED SPACE NAME, OPTIONAL REGION FOR SPACE, OPTIONAL HOST);
+###### SetSpace(REQUIRED SPACE NAME, OPTIONAL REGION FOR SPACE, OPTIONAL HOST);
 
 
 &nbsp;
@@ -145,31 +145,31 @@ All available options:
 ### Other Spaces APIs
 ```php
 //List all Spaces available in account.
-$spaces = $space->listSpaces();
+$spaces = $space->ListSpaces();
 
 
 //Delete a Space.
-$space->destroyThisSpace();
+$space->DestroyThisSpace();
 
 
 //Download whole Space to a folder.
-$space->downloadSpaceToDirectory($directory_to_download_to);
+$space->DownloadSpaceToDirectory($directory_to_download_to);
 
 
 //Get the name of the current Space.
-$space_name = $space->getSpaceName();
+$space_name = $space->GetSpaceName();
 
 
 //Pull the CORS policy of the Space.
-$cors = $space->listCORS();
+$cors = $space->ListCORS();
 
 
 //Update the CORS policy of the Space.
-$space->putCORS($new_policy);
+$space->PutCORS($new_policy);
 
 
 //Pull the Access Control List information of the Space.
-$acl = $space->listSpaceACL();
+$acl = $space->ListSpaceACL();
 
 
 //Update the Access Control List information of the Space.
@@ -184,8 +184,8 @@ $space->PutSpaceACL($new_acl);
 ```php
 try {
    $space->createSpace("dev");
-} catch (\Exception $e) {
-  $error = $space->GetError($e);
+} catch (\SpacesAPIException $e) {
+  $error = $e->GetError();
 
    //Error management code.
    echo "<pre>";
