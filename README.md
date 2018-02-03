@@ -3,7 +3,10 @@ An API wrapper for DigitalOcean's Spaces object storage designed for easy use.
 
 ### Connecting
 ```php
+//Either:
 require_once("spaces.php");
+//OR COMPOSER:
+require_once("vendor/autoload.php"); //Install first by executing: composer require SociallyDev/Spaces-API in your project's directory.
 
 $key = "EXAMPLE_KEY";
 $secret = "EXAMPLE_SECRET";
