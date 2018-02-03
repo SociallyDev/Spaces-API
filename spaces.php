@@ -37,40 +37,51 @@ class SpacesConnect {
     }
 
 
-
-    function createSpace($spaceName, $region = "") {
+    /*
+      Creates a Space.
+    */
+    function CreateSpace($spaceName, $region = "") {
         if(empty($region)) {
           $region = $this->region;
         }
         $current_space = $this->space;
         try {
-          $this->setSpace($spaceName);
+          $this->SetSpace($spaceName);
           $success = $this->client->createBucket(array('Bucket' => $spaceName));
           $this->client->waitUntil('BucketExists', array('Bucket' => $spaceName));
-          $this->setSpace($current_space);
+          $this->SetSpace($current_space);
           return $this->ObjReturn($success->toArray());
         } catch (\Exception $e) {
           $this->HandleAWSException($e);
         }
     }
 
-    function listSpaces() {
+    /*
+      Lists all spaces owned by you in the region.
+    */
+    function ListSpaces() {
         $current_space = $this->space;
         try {
-          $this->setSpace(NULL);
+          $this->SetSpace(NULL);
           $spaceList = $this->client->listBuckets();
-          $this->setSpace($current_space);
+          $this->SetSpace($current_space);
           return $this->ObjReturn($spaceList->toArray());
         } catch (\Exception $e) {
           $this->HandleAWSException($e);
         }
     }
 
+    /*
+      Shorthand for SetSpace - Change your current Space, Region and/or Host.
+    */
     function ChangeSpace($spaceName, $region = "", $host = "") {
-      return setSpace($spaceName, $region, $host);
+      return SetSpace($spaceName, $region, $host);
     }
 
-    function setSpace($spaceName, $region = "", $host = "") {
+    /*
+      Changes your current Space, Region and/or Host.
+    */
+    function SetSpace($spaceName, $region = "", $host = "") {
         if(empty($region)) { $region = $this->region; }
         if(empty($host)) { $host = $this->host; }
         if(!empty($spaceName)) {
@@ -97,11 +108,18 @@ class SpacesConnect {
         }
     }
 
-    function getSpaceName() {
+    /*
+      Fetches the current Space's name.
+    */
+    function GetSpaceName() {
         return $this->ObjReturn($this->space);
     }
 
-    function downloadSpaceToDirectory($pathToDirectory) {
+
+    /*
+      Downloads the whole Space to a directory.
+    */
+    function DownloadSpaceToDirectory($pathToDirectory) {
       try {
         $this->client->downloadBucket($pathToDirectory, $this->space);
         return $this->ObjReturn(true);
@@ -110,12 +128,15 @@ class SpacesConnect {
       }
     }
 
-    function destroyThisSpace() {
+    /*
+      Deletes the current Space.
+    */
+    function DestroyThisSpace() {
         try {
-          $objects = $this->listObjects();
+          $objects = $this->ListObjects();
           foreach ($objects as $value) {
             $key = $value["Key"];
-            $this->deleteObject($key);
+            $this->DeleteObject($key);
           }
           $this->client->deleteBucket(array('Bucket' => $this->space));
           $this->client->waitUntil('BucketNotExists', array('Bucket' => $this->space));
@@ -129,11 +150,14 @@ class SpacesConnect {
 
 
 
-
-    function listObjects() {
+    /*
+      Lists all objects.
+    */
+    function ListObjects($of_directory = "") {
       try {
          $objects = $this->client->getIterator('ListObjects', array(
-             'Bucket' => $this->space
+             'Bucket' => $this->space,
+             "Prefix" => $of_directory,
          ));
          $objectArray = array();
          foreach ($objects as $object) {
@@ -146,7 +170,10 @@ class SpacesConnect {
        }
     }
 
-    function doesObjectExist($objectName) {
+    /*
+      Checks whether an object exists.
+    */
+    function DoesObjectExist($objectName) {
       try {
          return $this->ObjReturn($this->client->doesObjectExist($this->space, $objectName));
        }
@@ -155,7 +182,10 @@ class SpacesConnect {
        }
     }
 
-    function getObject($file_name = "") {
+    /*
+      Fetches an object's details.
+    */
+    function GetObject($file_name = "") {
       try {
         $result = $this->client->getObject([
           'Bucket' => $this->space,
@@ -168,7 +198,10 @@ class SpacesConnect {
        }
     }
 
-    function makePrivate($file_path = "") {
+    /*
+      Makes an object private, (restricted) access.
+    */
+    function MakePrivate($file_path = "") {
       try {
         return $this->PutObjectACL($file_path, ["ACL" => "private"]);
        }
@@ -177,7 +210,10 @@ class SpacesConnect {
        }
     }
 
-    function makePublic($file_path = "") {
+    /*
+      Makes an object public anyone can access.
+    */
+    function MakePublic($file_path = "") {
       try {
         return $this->PutObjectACL($file_path, ["ACL" => "public-read"]);
        }
@@ -186,7 +222,10 @@ class SpacesConnect {
        }
     }
 
-    function deleteObject($file_path = "") {
+    /*
+      Deletes an object.
+    */
+    function DeleteObject($file_path = "") {
       try {
         return $this->ObjReturn($this->client->deleteObject([
         'Bucket' => $this->space,
@@ -198,9 +237,12 @@ class SpacesConnect {
        }
     }
 
-    function uploadFile($pathToFile, $access = "private", $fileName = "") {
-        if(empty($fileName)) {
-          $fileName = $pathToFile;
+    /*
+      Upload a file.
+    */
+    function UploadFile($pathToFile, $access = "private", $save_as = "") {
+        if(empty($save_as)) {
+          $save_as = $pathToFile;
         }
         if($access == "public") {
           $access = "public-read";
@@ -208,14 +250,14 @@ class SpacesConnect {
         try {
           $result = $this->client->putObject(array(
               'Bucket'  => $this->space,
-              'Key'     => $fileName,
+              'Key'     => $save_as,
               'Body'    => fopen($pathToFile, 'r+'),
               "ACL"     => $access
           ));
 
           $this->client->waitUntil('ObjectExists', array(
               'Bucket' => $this->space,
-              'Key'    => $fileName
+              'Key'    => $save_as
           ));
 
           return $this->ObjReturn($result->toArray());
@@ -225,7 +267,10 @@ class SpacesConnect {
          }
     }
 
-    function downloadFile($fileName, $destinationPath) {
+    /*
+      Download a file.
+    */
+    function DownloadFile($fileName, $destinationPath) {
       try {
         $result = $this->client->getObject(array(
             'Bucket' => $this->space,
@@ -240,11 +285,12 @@ class SpacesConnect {
        }
     }
 
-    function uploadDirectory($directory, $keyPrefix = "") {
+    /*
+      Uploads all contents of a directory.
+    */
+    function UploadDirectory($directory, $keyPrefix = "") {
       try {
-        $this->client->uploadDirectory($directory, $this->space, $keyPrefix);
-
-        return $this->ObjReturn($result->toArray());
+        return $this->client->uploadDirectory($directory, $this->space, $keyPrefix);
        }
        catch (\Exception $e) {
         $this->HandleAWSException($e);
@@ -255,8 +301,10 @@ class SpacesConnect {
 
 
 
-
-    function listCORS() {
+    /*
+      Lists the CORS policy of the Space.
+    */
+    function ListCORS() {
       try {
         $cors = $this->client->getBucketCors([
           'Bucket' => $this->space,
@@ -268,7 +316,10 @@ class SpacesConnect {
        }
     }
 
-    function putCORS($cors_rules = "") {
+    /*
+      Updates the CORS policy of the Space.
+    */
+    function PutCORS($cors_rules = "") {
       if(empty($cors_rules)) {
         $cors_rules = [
          'AllowedMethods' => ['GET'],
@@ -288,7 +339,10 @@ class SpacesConnect {
          }
     }
 
-    function listSpaceACL() {
+    /*
+      Fetches the ACL (Access Control Lists) of the Space.
+    */
+    function ListSpaceACL() {
       try {
         $acl = $this->client->getBucketAcl([
           'Bucket' => $this->space,
@@ -300,7 +354,9 @@ class SpacesConnect {
        }
     }
 
-
+    /*
+      Updates the ACL (Access Control Lists) of the Space.
+    */
     function PutSpaceACL($params) {
       try {
         $acl = $this->client->putBucketAcl($params);
@@ -311,7 +367,10 @@ class SpacesConnect {
        }
     }
 
-    function listObjectACL($file) {
+    /*
+      Lists an object's ACL (Access Control Lists).
+    */
+    function ListObjectACL($file) {
       try {
         $result = $this->client->getObjectAcl([
            'Bucket' => $this->space,
@@ -324,6 +383,9 @@ class SpacesConnect {
        }
     }
 
+    /*
+      Updates an object's ACL (Access Control Lists).
+    */
     function PutObjectACL($file, $acl) {
       try {
         $acl = array_merge(array("Bucket" => $this->space, "Key" => $file), $acl);
@@ -337,7 +399,9 @@ class SpacesConnect {
 
 
 
-
+    /*
+      Creates a temporary URL for a file (Mainly for accessing private files).
+    */
     function CreateTemporaryURL($file_name = "", $valid_for = "1 hour") {
         $secret_key = $this->secret_key;
         $expiry = strtotime("+ ".$valid_for);
@@ -363,13 +427,18 @@ class SpacesConnect {
     }
 
 
-
+    /*
+      INTERNAL FUNCTION - Returns a standardized object.
+    */
     function ObjReturn($return) {
       $return = @json_decode(@json_encode($return), true);
       $return = $this->AWSTime($return);
       return $return;
     }
 
+    /*
+      INTERNAL FUNCTION - Converts all AWS time values to unix timestamps.
+    */
     function AWSTime($obj) {
       $time_keys = ["LastModified", "CreationDate", "Expires", "last-modified", "date", "Expiration"];
       if(is_array($obj)) {
@@ -389,6 +458,9 @@ class SpacesConnect {
       return $obj;
     }
 
+    /*
+      INTERNAL FUNCTION - Checks whether an array has any keys.
+    */
     private function any_key_exists($keys, $arr) {
       foreach ($keys as $key) {
         if(array_key_exists($key, $arr)) {
@@ -398,7 +470,9 @@ class SpacesConnect {
       return false;
     }
 
-
+    /*
+      INTERNAL FUNCTION - Standardizes AWS errors.
+    */
     function HandleAWSException($e) {
       if(get_class($e) == "Aws\S3\Exception\S3Exception") {
         $error["error"] = [
@@ -415,13 +489,20 @@ class SpacesConnect {
     }
 
     function GetError($e) {
-      $error = @json_decode($e->getMessage(), true);
-      return $error["error"];
+
     }
 }
 
+/*
+  INTERNAL FUNCTION - Throws error for catching.
+*/
 class SpacesAPIException extends \Exception {
     public function __construct($message, $code = 0, Exception $previous = null) {
         parent::__construct($message, $code, $previous);
+    }
+
+    public function getError() {
+      $error = @json_decode($this->getMessage(), true);
+      return $error["error"];
     }
 }
