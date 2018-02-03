@@ -1,5 +1,4 @@
 <?php
-require_once(dirname(__FILE__)."/aws/autoloader.php");
 
 class SpacesConnect {
   /*
@@ -9,11 +8,23 @@ class SpacesConnect {
   */
 
     function __construct($access_key, $secret_key, $spaceName = "", $region = "nyc3", $host = "digitaloceanspaces.com") {
+
+        //Only pulled if an AWS class doesn't already exist.
+        $non_composer_aws_lib = dirname(__FILE__)."/aws/autoloader.phpx";
+
         if(!empty($spaceName)) {
           $endpoint = "https://".$spaceName.".".$region.".".$host;
         }
         else {
           $endpoint = "https://".$region.".".$host;
+        }
+        if(!class_exists('Aws\S3\S3Client')) {
+           if(file_exists($non_composer_aws_lib)) {
+             require_once($non_composer_aws_lib);
+           }
+           else {
+             throw new SpacesAPIException(@json_encode(["error" => ["message" => "No AWS class loaded.", "code" => "no_aws_class", "type" => "init"]]));
+           }
         }
         try {
           $this->client = Aws\S3\S3Client::factory(array(
