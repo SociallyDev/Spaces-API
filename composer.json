@@ -17,5 +17,5 @@
     ],
     "autoload": {
         "files": ["spaces.php"]
-    },
+    }
 }
