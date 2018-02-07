@@ -1,5 +1,5 @@
 {
-    "name": "SociallyDev/Spaces-API",
+    "name": "sociallydev/spaces-api",
     "description": "An API wrapper for DigitalOcean's Spaces object storage designed for easy use.",
     "type": "library",
     "require": {
