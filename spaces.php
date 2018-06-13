@@ -258,11 +258,16 @@ class SpacesConnect {
         if($access == "public") {
           $access = "public-read";
         }
+        if(!is_file($pathToFile)){
+          $file = $pathToFile;
+        }else{
+          $file = fopen($pathToFile, 'r+');
+        }
         try {
           $result = $this->client->putObject(array(
               'Bucket'  => $this->space,
               'Key'     => $save_as,
-              'Body'    => fopen($pathToFile, 'r+'),
+              'Body'    => $file,
               "ACL"     => $access
           ));
 
@@ -281,15 +286,24 @@ class SpacesConnect {
     /*
       Download a file.
     */
-    function DownloadFile($fileName, $destinationPath) {
+    function DownloadFile($fileName, $destinationPath = false) {
       try {
-        $result = $this->client->getObject(array(
-            'Bucket' => $this->space,
-            'Key'    => $fileName,
-            'SaveAs' => $destinationPath
-        ));
-
-        return $this->ObjReturn($result->toArray());
+        if(!$destinationPath) {
+              $result = $this->client->getObject(array(
+                  'Bucket' => $this->space,
+                  'Key'    => $fileName,
+              ));
+              
+              return $result['Body'];
+          }else{
+              $result = $this->client->getObject(array(
+                  'Bucket' => $this->space,
+                  'Key'    => $fileName,
+                  'SaveAs' => $destinationPath
+              ));
+              
+              return $this->ObjReturn($result->toArray());
+          }
        }
        catch (\Exception $e) {
         $this->HandleAWSException($e);
