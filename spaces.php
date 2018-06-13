@@ -288,17 +288,22 @@ class SpacesConnect {
     */
     function DownloadFile($fileName, $destinationPath = false) {
       try {
-        $result = $this->client->getObject(array(
-            'Bucket' => $this->space,
-            'Key'    => $fileName,
-            'SaveAs' => $destinationPath
-        ));
-        
         if(!$destinationPath) {
-            return $result;
-        }
-
-        return $this->ObjReturn($result->toArray());
+              $result = $this->client->getObject(array(
+                  'Bucket' => $this->space,
+                  'Key'    => $fileName,
+              ));
+              
+              return $result['Body'];
+          }else{
+              $result = $this->client->getObject(array(
+                  'Bucket' => $this->space,
+                  'Key'    => $fileName,
+                  'SaveAs' => $destinationPath
+              ));
+              
+              return $this->ObjReturn($result->toArray());
+          }
        }
        catch (\Exception $e) {
         $this->HandleAWSException($e);
