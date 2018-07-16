@@ -35,7 +35,8 @@ class SpacesConnect {
                       'key'    => $access_key,
                       'secret' => $secret_key,
                   ),
-            'bucket_endpoint' => true
+            'bucket_endpoint' => true,
+            'signature_version' => 'v4-unsigned-body'
           ));
         } catch (\Exception $e) {
           $this->HandleAWSException($e);
@@ -293,7 +294,7 @@ class SpacesConnect {
                   'Bucket' => $this->space,
                   'Key'    => $fileName,
               ));
-              
+
               return $result['Body'];
           }else{
               $result = $this->client->getObject(array(
@@ -301,7 +302,7 @@ class SpacesConnect {
                   'Key'    => $fileName,
                   'SaveAs' => $destinationPath
               ));
-              
+
               return $this->ObjReturn($result->toArray());
           }
        }
