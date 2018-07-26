@@ -281,6 +281,10 @@ class SpacesConnect {
          }
          catch (\Exception $e) {
           $this->HandleAWSException($e);
+         } finally {     
+            if (is_file($pathToFile)) {
+                fclose($file);
+            }
          }
     }
 
