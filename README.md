@@ -1,4 +1,6 @@
 # Spaces-API
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FSociallyDev%2FSpaces-API.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FSociallyDev%2FSpaces-API?ref=badge_shield)
+
 An API wrapper for DigitalOcean's Spaces object storage designed for easy use. 
 
 ### Connecting
@@ -204,3 +206,7 @@ try {
    */
 }
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FSociallyDev%2FSpaces-API.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FSociallyDev%2FSpaces-API?ref=badge_large)
