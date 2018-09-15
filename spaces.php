@@ -252,7 +252,7 @@ class SpacesConnect {
     /*
       Upload a file.
     */
-    function UploadFile($pathToFile, $access = "private", $save_as = "") {
+    function UploadFile($pathToFile, $access = "private", $save_as = "", $mime_type = "application/octet-stream") {
         if(empty($save_as)) {
           $save_as = $pathToFile;
         }
@@ -266,10 +266,11 @@ class SpacesConnect {
         }
         try {
           $result = $this->client->putObject(array(
-              'Bucket'  => $this->space,
-              'Key'     => $save_as,
-              'Body'    => $file,
-              "ACL"     => $access
+              'Bucket'      => $this->space,
+              'Key'         => $save_as,
+              'Body'        => $file,
+              'ACL'         => $access,
+              'ContentType' => $mime_type
           ));
 
           $this->client->waitUntil('ObjectExists', array(
