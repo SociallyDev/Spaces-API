@@ -252,7 +252,7 @@ class SpacesConnect {
     /*
       Upload a file.
     */
-    function UploadFile($pathToFile, $access = "private", $save_as = "") {
+    function UploadFile($pathToFile, $access = "private", $save_as = "", $mime_type = "application/octet-stream") {
         if(empty($save_as)) {
           $save_as = $pathToFile;
         }
@@ -266,10 +266,11 @@ class SpacesConnect {
         }
         try {
           $result = $this->client->putObject(array(
-              'Bucket'  => $this->space,
-              'Key'     => $save_as,
-              'Body'    => $file,
-              "ACL"     => $access
+              'Bucket'      => $this->space,
+              'Key'         => $save_as,
+              'Body'        => $file,
+              'ACL'         => $access,
+              'ContentType' => $mime_type
           ));
 
           $this->client->waitUntil('ObjectExists', array(
@@ -433,27 +434,12 @@ class SpacesConnect {
       Creates a temporary URL for a file (Mainly for accessing private files).
     */
     function CreateTemporaryURL($file_name = "", $valid_for = "1 hour") {
-        $secret_key = $this->secret_key;
-        $expiry = strtotime("+ ".$valid_for);
-        $file_name = rawurlencode($file_name);
-        $file = str_replace(array('%2F', '%2B'), array('/', '+'), ltrim($file_name, '/') );
-        $objectPathForSignature = '/'. $this->space .'/'. $file_name;
-        $stringToSign = implode("\n", $pieces = array('GET', null, null, $expiry, $objectPathForSignature));
-        $url = 'https://' . $this->space . '.'.$this->region.'.'.$this->host.'/' . $file_name;
-        $blocksize = 64;
-        if (strlen($secret_key) > $blocksize) $secret_key = pack('H*', sha1($secret_key));
-        $secret_key = str_pad($secret_key, $blocksize, chr(0x00));
-        $ipad = str_repeat(chr(0x36), $blocksize);
-        $opad = str_repeat(chr(0x5c), $blocksize);
-        $hmac = pack( 'H*', sha1(($secret_key ^ $opad) . pack( 'H*', sha1(($secret_key ^ $ipad) . $stringToSign))));
-        $signature = base64_encode($hmac);
-        $queries = http_build_query($pieces = array(
-                  'AWSAccessKeyId' => $this->access_key,
-                  'Expires' => $expiry,
-                  'Signature' => $signature,
-                 ));
-       $url .= "?".$queries;
-       return $this->ObjReturn($url);
+        $cmd = $this->client->getCommand('GetObject', [
+            'Bucket' => $this->space,
+            'Key'    => $file_name
+        ]);
+        $request = $this->client->createPresignedRequest($cmd, $valid_for);
+        return (string)$request->getUri();
     }
 
 
