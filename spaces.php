@@ -112,7 +112,8 @@ class SpacesConnect {
                       'key'    => $this->access_key,
                       'secret' => $this->secret_key,
                   ),
-            'bucket_endpoint' => true
+            'bucket_endpoint' => true,
+            'signature_version' => 'v4-unsigned-body'
           ));
           return $this->ObjReturn(true);
         } catch (\Exception $e) {
