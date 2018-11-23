@@ -260,7 +260,8 @@ class SpacesConnect {
         if($access == "public") {
           $access = "public-read";
         }
-        if(!is_file($pathToFile)){
+        $is_file = strlen($pathToFile) <= PHP_MAXPATHLEN && is_file($pathToFile);
+        if(!$is_file){
           $file = $pathToFile;
         }else{
           $file = fopen($pathToFile, 'r+');
@@ -284,7 +285,7 @@ class SpacesConnect {
          catch (\Exception $e) {
           $this->HandleAWSException($e);
          } finally {     
-            if (is_file($pathToFile)) {
+            if ($is_file) {
                 fclose($file);
             }
          }
