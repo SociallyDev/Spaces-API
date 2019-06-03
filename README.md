@@ -53,6 +53,21 @@ All available options:
 
 
 
+&nbsp;
+
+
+### Deleting Files/Folders
+```php
+
+$file_name = "image.png";
+
+$space->DeleteObject($file_name);
+```
+All available options: 
+###### DeleteObject(REQUIRED FILE OR FOLDER TO DELETE, OPTIONAL RECURSIVE (false|true));
+
+
+
 
 &nbsp;
 
@@ -99,10 +114,6 @@ $space->DoesObjectExist($file_name);
 
 //Pull information about a single object.
 $file_info = $space->GetObject($file_name);
-
-
-//Delete a file/folder.
-$space->DeleteObject($file_name);
 
 
 //Upload a complete directory instead of a single file.

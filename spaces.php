@@ -238,8 +238,12 @@ class SpacesConnect {
     /*
       Deletes an object.
     */
-    function DeleteObject($file_path = "") {
+    function DeleteObject($file_path = "", $recursive = false) {
       try {
+	    if ($recursive) return $this->ObjReturn($this->client->deleteMatchingObjects(
+          $this->space,
+          $file_path
+        ));
         return $this->ObjReturn($this->client->deleteObject([
         'Bucket' => $this->space,
         'Key' => $file_path,
@@ -284,7 +288,7 @@ class SpacesConnect {
          }
          catch (\Exception $e) {
           $this->HandleAWSException($e);
-         } finally {     
+         } finally {
             if ($is_file) {
                 fclose($file);
             }
