@@ -36,6 +36,7 @@ All available options:
 
 ### Uploading/Downloading Files
 ```php
+// Don't start any path with a forward slash, or it will give "SignatureDoesNotMatch" exception
 $path_to_file = "image.png";
 
 $space->UploadFile($path_to_file, "public");
