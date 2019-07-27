@@ -289,7 +289,7 @@ class SpacesConnect {
          catch (\Exception $e) {
           $this->HandleAWSException($e);
          } finally {
-            if ($is_file) {
+            if (is_resource($file)) {
                 fclose($file);
             }
          }
