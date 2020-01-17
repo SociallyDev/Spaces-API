@@ -268,7 +268,7 @@ class SpacesConnect {
         if(!$is_file){
           $file = $pathToFile;
         }else{
-          $file = fopen($pathToFile, 'r+');
+          $file = fopen($pathToFile, 'r');
         }
         try {
           $result = $this->client->putObject(array(
