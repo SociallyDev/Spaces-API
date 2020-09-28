@@ -5,17 +5,24 @@ use Aws\Api\ApiProvider;
 use Aws\Api\DocModel;
 use Aws\Api\Service;
 use Aws\AwsClient;
+use Aws\CacheInterface;
 use Aws\ClientResolver;
 use Aws\Command;
 use Aws\Exception\AwsException;
 use Aws\HandlerList;
 use Aws\Middleware;
+use Aws\Retry\QuotaManager;
 use Aws\RetryMiddleware;
 use Aws\ResultInterface;
 use Aws\CommandInterface;
+use Aws\RetryMiddlewareV2;
+use Aws\S3\UseArnRegion\Configuration;
+use Aws\S3\UseArnRegion\ConfigurationInterface;
+use Aws\S3\UseArnRegion\ConfigurationProvider as UseArnRegionConfigurationProvider;
+use Aws\S3\RegionalEndpoint\ConfigurationProvider;
 use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Promise;
-use GuzzleHttp\Psr7;
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\RequestInterface;
 
 /**
@@ -59,6 +66,8 @@ use Psr\Http\Message\RequestInterface;
  * @method \GuzzleHttp\Promise\Promise deleteObjectTaggingAsync(array $args = [])
  * @method \Aws\Result deleteObjects(array $args = [])
  * @method \GuzzleHttp\Promise\Promise deleteObjectsAsync(array $args = [])
+ * @method \Aws\Result deletePublicAccessBlock(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise deletePublicAccessBlockAsync(array $args = [])
  * @method \Aws\Result getBucketAccelerateConfiguration(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketAccelerateConfigurationAsync(array $args = [])
  * @method \Aws\Result getBucketAcl(array $args = [])
@@ -87,6 +96,8 @@ use Psr\Http\Message\RequestInterface;
  * @method \GuzzleHttp\Promise\Promise getBucketNotificationConfigurationAsync(array $args = [])
  * @method \Aws\Result getBucketPolicy(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketPolicyAsync(array $args = [])
+ * @method \Aws\Result getBucketPolicyStatus(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise getBucketPolicyStatusAsync(array $args = [])
  * @method \Aws\Result getBucketReplication(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getBucketReplicationAsync(array $args = [])
  * @method \Aws\Result getBucketRequestPayment(array $args = [])
@@ -101,10 +112,18 @@ use Psr\Http\Message\RequestInterface;
  * @method \GuzzleHttp\Promise\Promise getObjectAsync(array $args = [])
  * @method \Aws\Result getObjectAcl(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getObjectAclAsync(array $args = [])
+ * @method \Aws\Result getObjectLegalHold(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise getObjectLegalHoldAsync(array $args = [])
+ * @method \Aws\Result getObjectLockConfiguration(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise getObjectLockConfigurationAsync(array $args = [])
+ * @method \Aws\Result getObjectRetention(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise getObjectRetentionAsync(array $args = [])
  * @method \Aws\Result getObjectTagging(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getObjectTaggingAsync(array $args = [])
  * @method \Aws\Result getObjectTorrent(array $args = [])
  * @method \GuzzleHttp\Promise\Promise getObjectTorrentAsync(array $args = [])
+ * @method \Aws\Result getPublicAccessBlock(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise getPublicAccessBlockAsync(array $args = [])
  * @method \Aws\Result headBucket(array $args = [])
  * @method \GuzzleHttp\Promise\Promise headBucketAsync(array $args = [])
  * @method \Aws\Result headObject(array $args = [])
@@ -167,10 +186,20 @@ use Psr\Http\Message\RequestInterface;
  * @method \GuzzleHttp\Promise\Promise putObjectAsync(array $args = [])
  * @method \Aws\Result putObjectAcl(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putObjectAclAsync(array $args = [])
+ * @method \Aws\Result putObjectLegalHold(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise putObjectLegalHoldAsync(array $args = [])
+ * @method \Aws\Result putObjectLockConfiguration(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise putObjectLockConfigurationAsync(array $args = [])
+ * @method \Aws\Result putObjectRetention(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise putObjectRetentionAsync(array $args = [])
  * @method \Aws\Result putObjectTagging(array $args = [])
  * @method \GuzzleHttp\Promise\Promise putObjectTaggingAsync(array $args = [])
+ * @method \Aws\Result putPublicAccessBlock(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise putPublicAccessBlockAsync(array $args = [])
  * @method \Aws\Result restoreObject(array $args = [])
  * @method \GuzzleHttp\Promise\Promise restoreObjectAsync(array $args = [])
+ * @method \Aws\Result selectObjectContent(array $args = [])
+ * @method \GuzzleHttp\Promise\Promise selectObjectContentAsync(array $args = [])
  * @method \Aws\Result uploadPart(array $args = [])
  * @method \GuzzleHttp\Promise\Promise uploadPartAsync(array $args = [])
  * @method \Aws\Result uploadPartCopy(array $args = [])
@@ -194,6 +223,19 @@ class S3Client extends AwsClient implements S3ClientInterface
                     . 'bucket endpoint rather than create an endpoint as a '
                     . 'result of injecting the bucket into the URL. This '
                     . 'option is useful for interacting with CNAME endpoints.',
+            ],
+            'use_arn_region' => [
+                'type'    => 'config',
+                'valid'   => [
+                    'bool',
+                    Configuration::class,
+                    CacheInterface::class,
+                    'callable'
+                ],
+                'doc'     => 'Set to true to allow passed in ARNs to override'
+                    . ' client region. Accepts...',
+                'fn' => [__CLASS__, '_apply_use_arn_region'],
+                'default' => [UseArnRegionConfigurationProvider::class, 'defaultProvider'],
             ],
             'use_accelerate_endpoint' => [
                 'type' => 'config',
@@ -240,11 +282,28 @@ class S3Client extends AwsClient implements S3ClientInterface
      *   interacting with CNAME endpoints.
      * - calculate_md5: (bool) Set to false to disable calculating an MD5
      *   for all Amazon S3 signed uploads.
+     * - s3_us_east_1_regional_endpoint:
+     *   (Aws\S3\RegionalEndpoint\ConfigurationInterface|Aws\CacheInterface\|callable|string|array)
+     *   Specifies whether to use regional or legacy endpoints for the us-east-1
+     *   region. Provide an Aws\S3\RegionalEndpoint\ConfigurationInterface object, an
+     *   instance of Aws\CacheInterface, a callable configuration provider used
+     *   to create endpoint configuration, a string value of `legacy` or
+     *   `regional`, or an associative array with the following keys:
+     *   endpoint_types: (string)  Set to `legacy` or `regional`, defaults to
+     *   `legacy`
      * - use_accelerate_endpoint: (bool) Set to true to send requests to an S3
      *   Accelerate endpoint by default. Can be enabled or disabled on
      *   individual operations by setting '@use_accelerate_endpoint' to true or
      *   false. Note: you must enable S3 Accelerate on a bucket before it can be
      *   accessed via an Accelerate endpoint.
+     * - use_arn_region: (Aws\S3\UseArnRegion\ConfigurationInterface,
+     *   Aws\CacheInterface, bool, callable) Set to true to enable the client
+     *   to use the region from a supplied ARN argument instead of the client's
+     *   region. Provide an instance of Aws\S3\UseArnRegion\ConfigurationInterface,
+     *   an instance of Aws\CacheInterface, a callable that provides a promise for
+     *   a Configuration object, or a boolean value. Defaults to false (i.e.
+     *   the SDK will not follow the ARN region if it conflicts with the client
+     *   region and instead throw an error).
      * - use_dual_stack_endpoint: (bool) Set to true to send requests to an S3
      *   Dual Stack endpoint by default, which enables IPv6 Protocol.
      *   Can be enabled or disabled on individual operations by setting
@@ -260,15 +319,20 @@ class S3Client extends AwsClient implements S3ClientInterface
      */
     public function __construct(array $args)
     {
+        if (
+            !isset($args['s3_us_east_1_regional_endpoint'])
+            || $args['s3_us_east_1_regional_endpoint'] instanceof CacheInterface
+        ) {
+            $args['s3_us_east_1_regional_endpoint'] = ConfigurationProvider::defaultProvider($args);
+        }
         parent::__construct($args);
         $stack = $this->getHandlerList();
         $stack->appendInit(SSECMiddleware::wrap($this->getEndpoint()->getScheme()), 's3.ssec');
-        $stack->appendBuild(ApplyChecksumMiddleware::wrap(), 's3.checksum');
+        $stack->appendBuild(ApplyChecksumMiddleware::wrap($this->getApi()), 's3.checksum');
         $stack->appendBuild(
             Middleware::contentType(['PutObject', 'UploadPart']),
             's3.content_type'
         );
-
 
         // Use the bucket style middleware when using a "bucket_endpoint" (for cnames)
         if ($this->getConfig('bucket_endpoint')) {
@@ -277,6 +341,7 @@ class S3Client extends AwsClient implements S3ClientInterface
             $stack->appendBuild(
                 S3EndpointMiddleware::wrap(
                     $this->getRegion(),
+                    $this->getConfig('endpoint_provider'),
                     [
                         'dual_stack' => $this->getConfig('use_dual_stack_endpoint'),
                         'accelerate' => $this->getConfig('use_accelerate_endpoint'),
@@ -287,6 +352,22 @@ class S3Client extends AwsClient implements S3ClientInterface
             );
         }
 
+        $stack->appendBuild(
+            BucketEndpointArnMiddleware::wrap(
+                $this->getApi(),
+                $this->getRegion(),
+                [
+                    'use_arn_region' => $this->getConfig('use_arn_region'),
+                    'dual_stack' => $this->getConfig('use_dual_stack_endpoint'),
+                    'accelerate' => $this->getConfig('use_accelerate_endpoint'),
+                    'path_style' => $this->getConfig('use_path_style_endpoint'),
+                    'endpoint' => isset($args['endpoint'])
+                        ? $args['endpoint']
+                        : null
+                ]
+            ),
+            's3.bucket_endpoint_arn'
+        );
         $stack->appendSign(PutObjectUrlMiddleware::wrap(), 's3.put_object_url');
         $stack->appendSign(PermanentRedirectMiddleware::wrap(), 's3.permanent_redirect');
         $stack->appendInit(Middleware::sourceFile($this->getApi()), 's3.source_file');
@@ -317,7 +398,26 @@ class S3Client extends AwsClient implements S3ClientInterface
             preg_match('/^[a-z0-9]([a-z0-9\-\.]*[a-z0-9])?$/', $bucket);
     }
 
-    public function createPresignedRequest(CommandInterface $command, $expires)
+    public static function _apply_use_arn_region($value, array &$args, HandlerList $list)
+    {
+        if ($value instanceof CacheInterface) {
+            $value = UseArnRegionConfigurationProvider::defaultProvider($args);
+        }
+        if (is_callable($value)) {
+            $value = $value();
+        }
+        if ($value instanceof PromiseInterface) {
+            $value = $value->wait();
+        }
+        if ($value instanceof ConfigurationInterface) {
+            $args['use_arn_region'] = $value;
+        } else {
+            // The Configuration class itself will validate other inputs
+            $args['use_arn_region'] = new Configuration($value);
+        }
+    }
+
+    public function createPresignedRequest(CommandInterface $command, $expires, array $options = [])
     {
         $command = clone $command;
         $command->getHandlerList()->remove('signer');
@@ -333,10 +433,24 @@ class S3Client extends AwsClient implements S3ClientInterface
         return $signer->presign(
             \Aws\serialize($command),
             $this->getCredentials()->wait(),
-            $expires
+            $expires,
+            $options
         );
     }
 
+    /**
+     * Returns the URL to an object identified by its bucket and key.
+     *
+     * The URL returned by this method is not signed nor does it ensure that the
+     * bucket and key given to the method exist. If you need a signed URL, then
+     * use the {@see \Aws\S3\S3Client::createPresignedRequest} method and get
+     * the URI of the signed request.
+     *
+     * @param string $bucket  The name of the bucket where the object is located
+     * @param string $key     The key of the object
+     *
+     * @return string The URL to the object
+     */
     public function getObjectUrl($bucket, $key)
     {
         $command = $this->getCommand('GetObject', [
@@ -486,49 +600,97 @@ class S3Client extends AwsClient implements S3ClientInterface
     }
 
     /** @internal */
-    public static function _applyRetryConfig($value, $_, HandlerList $list)
+    public static function _applyRetryConfig($value, $args, HandlerList $list)
     {
-        if (!$value) {
-            return;
-        }
+        if ($value) {
+            $config = \Aws\Retry\ConfigurationProvider::unwrap($value);
 
-        $decider = RetryMiddleware::createDefaultDecider($value);
-        $decider = function ($retries, $command, $request, $result, $error) use ($decider, $value) {
-            $maxRetries = null !== $command['@retries']
-                ? $command['@retries']
-                : $value;
+            if ($config->getMode() === 'legacy') {
+                $maxRetries = $config->getMaxAttempts() - 1;
+                $decider = RetryMiddleware::createDefaultDecider($maxRetries);
+                $decider = function ($retries, $command, $request, $result, $error) use ($decider, $maxRetries) {
+                    $maxRetries = null !== $command['@retries']
+                        ? $command['@retries']
+                        : $maxRetries;
 
-            if ($decider($retries, $command, $request, $result, $error)) {
-                return true;
-            } elseif ($error instanceof AwsException
-                && $retries < $maxRetries
-            ) {
-                if (
-                    $error->getResponse()
-                    && $error->getResponse()->getStatusCode() >= 400
-                ) {
-                    return strpos(
-                        $error->getResponse()->getBody(),
-                        'Your socket connection to the server'
-                    ) !== false;
-                } elseif ($error->getPrevious() instanceof RequestException) {
-                    // All commands except CompleteMultipartUpload are
-                    // idempotent and may be retried without worry if a
-                    // networking error has occurred.
-                    return $command->getName() !== 'CompleteMultipartUpload';
-                }
+                    if ($decider($retries, $command, $request, $result, $error)) {
+                        return true;
+                    }
+
+                    if ($error instanceof AwsException
+                        && $retries < $maxRetries
+                    ) {
+                        if ($error->getResponse()
+                            && $error->getResponse()->getStatusCode() >= 400
+                        ) {
+                            return strpos(
+                                    $error->getResponse()->getBody(),
+                                    'Your socket connection to the server'
+                                ) !== false;
+                        }
+
+                        if ($error->getPrevious() instanceof RequestException) {
+                            // All commands except CompleteMultipartUpload are
+                            // idempotent and may be retried without worry if a
+                            // networking error has occurred.
+                            return $command->getName() !== 'CompleteMultipartUpload';
+                        }
+                    }
+
+                    return false;
+                };
+
+                $delay = [RetryMiddleware::class, 'exponentialDelay'];
+                $list->appendSign(Middleware::retry($decider, $delay), 'retry');
+            } else {
+                $defaultDecider = RetryMiddlewareV2::createDefaultDecider(
+                    new QuotaManager(),
+                    $config->getMaxAttempts()
+                );
+
+                $list->appendSign(
+                    RetryMiddlewareV2::wrap(
+                        $config,
+                        [
+                            'collect_stats' => $args['stats']['retries'],
+                            'decider' => function(
+                                $attempts,
+                                CommandInterface $cmd,
+                                $result
+                            ) use ($defaultDecider, $config) {
+                                $isRetryable = $defaultDecider($attempts, $cmd, $result);
+                                if (!$isRetryable
+                                    && $result instanceof AwsException
+                                    && $attempts < $config->getMaxAttempts()
+                                ) {
+                                    if (!empty($result->getResponse())
+                                        && strpos(
+                                            $result->getResponse()->getBody(),
+                                            'Your socket connection to the server'
+                                        ) !== false
+                                    ) {
+                                        $isRetryable = false;
+                                    }
+                                    if ($result->getPrevious() instanceof RequestException
+                                        && $cmd->getName() !== 'CompleteMultipartUpload'
+                                    ) {
+                                        $isRetryable = true;
+                                    }
+                                }
+                                return $isRetryable;
+                            }
+                        ]
+                    ),
+                    'retry'
+                );
             }
-            return false;
-        };
-
-        $delay = [RetryMiddleware::class, 'exponentialDelay'];
-        $list->appendSign(Middleware::retry($decider, $delay), 'retry');
+        }
     }
 
     /** @internal */
     public static function _applyApiProvider($value, array &$args, HandlerList $list)
     {
-        ClientResolver::_apply_api_provider($value, $args, $list);
+        ClientResolver::_apply_api_provider($value, $args);
         $args['parser'] = new GetBucketLocationParser(
             new AmbiguousSuccessParser(
                 new RetryableMalformedResponseParser(
@@ -549,6 +711,18 @@ class S3Client extends AwsClient implements S3ClientInterface
     {
         $b64 = '<div class="alert alert-info">This value will be base64 encoded on your behalf.</div>';
         $opt = '<div class="alert alert-info">This value will be computed for you it is not supplied.</div>';
+
+        // Add a note on the CopyObject docs
+         $s3ExceptionRetryMessage = "<p>Additional info on response behavior: if there is"
+            . " an internal error in S3 after the request was successfully recieved,"
+            . " a 200 response will be returned with an <code>S3Exception</code> embedded"
+            . " in it; this will still be caught and retried by"
+            . " <code>RetryMiddleware.</code></p>";
+
+        $docs['operations']['CopyObject'] .=  $s3ExceptionRetryMessage;
+        $docs['operations']['CompleteMultipartUpload'] .=  $s3ExceptionRetryMessage;
+        $docs['operations']['UploadPartCopy'] .=  $s3ExceptionRetryMessage;
+        $docs['operations']['UploadPart'] .=  $s3ExceptionRetryMessage;
 
         // Add the SourceFile parameter.
         $docs['shapes']['SourceFile']['base'] = 'The path to a file on disk to use instead of the Body parameter.';
@@ -605,5 +779,61 @@ class S3Client extends AwsClient implements S3ClientInterface
             new Service($api, ApiProvider::defaultProvider()),
             new DocModel($docs)
         ];
+    }
+
+    /**
+     * @internal
+     * @codeCoverageIgnore
+     */
+    public static function addDocExamples($examples)
+    {
+        $getObjectExample = [
+            'input' => [
+                'Bucket' => 'arn:aws:s3:us-east-1:123456789012:accesspoint:myaccesspoint',
+                'Key' => 'my-key'
+            ],
+            'output' => [
+                'Body' => 'class GuzzleHttp\Psr7\Stream#208 (7) {...}',
+                'ContentLength' => '11',
+                'ContentType' => 'application/octet-stream',
+            ],
+            'comments' => [
+                'input' => '',
+                'output' => 'Simplified example output'
+            ],
+            'description' => 'The following example retrieves an object by referencing the bucket via an S3 accesss point ARN. Result output is simplified for the example.',
+            'id' => '',
+            'title' => 'To get an object via an S3 access point ARN'
+        ];
+        if (isset($examples['GetObject'])) {
+            $examples['GetObject'] []= $getObjectExample;
+        } else {
+            $examples['GetObject'] = [$getObjectExample];
+        }
+
+        $putObjectExample = [
+            'input' => [
+                'Bucket' => 'arn:aws:s3:us-east-1:123456789012:accesspoint:myaccesspoint',
+                'Key' => 'my-key',
+                'Body' => 'my-body',
+            ],
+            'output' => [
+                'ObjectURL' => 'https://my-bucket.s3.us-east-1.amazonaws.com/my-key'
+            ],
+            'comments' => [
+                'input' => '',
+                'output' => 'Simplified example output'
+            ],
+            'description' => 'The following example uploads an object by referencing the bucket via an S3 accesss point ARN. Result output is simplified for the example.',
+            'id' => '',
+            'title' => 'To upload an object via an S3 access point ARN'
+        ];
+        if (isset($examples['PutObject'])) {
+            $examples['PutObject'] []= $putObjectExample;
+        } else {
+            $examples['PutObject'] = [$putObjectExample];
+        }
+
+        return $examples;
     }
 }

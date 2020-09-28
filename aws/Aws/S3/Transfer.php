@@ -5,7 +5,6 @@ use Aws;
 use Aws\CommandInterface;
 use Aws\Exception\AwsException;
 use GuzzleHttp\Promise;
-use GuzzleHttp\Psr7;
 use GuzzleHttp\Promise\PromisorInterface;
 use Iterator;
 
@@ -33,7 +32,8 @@ class Transfer implements PromisorInterface
      * the path to a directory on disk to upload, an s3 scheme URI that contains
      * the bucket and key (e.g., "s3://bucket/key"), or an \Iterator object
      * that yields strings containing filenames that are the path to a file on
-     * disk or an s3 scheme URI. The "/key" portion of an s3 URI is optional.
+     * disk or an s3 scheme URI. The bucket portion of the s3 URI may be an S3
+     * access point ARN. The "/key" portion of an s3 URI is optional.
      *
      * When providing an iterator for the $source argument, you must also
      * provide a 'base_dir' key value pair in the $options argument.
@@ -47,10 +47,9 @@ class Transfer implements PromisorInterface
      *   iterator. If the $source option is not an array, then this option is
      *   ignored.
      * - before: (callable) A callback to invoke before each transfer. The
-     *   callback accepts the following positional arguments: string $source,
-     *   string $dest, Aws\CommandInterface $command. The provided command will
-     *   be either a GetObject, PutObject, InitiateMultipartUpload, or
-     *   UploadPart command.
+     *   callback accepts a single argument: Aws\CommandInterface $command.
+     *   The provided command will be either a GetObject, PutObject,
+     *   InitiateMultipartUpload, or UploadPart command.
      * - mup_threshold: (int) Size in bytes in which a multipart upload should
      *   be used instead of PutObject. Defaults to 20971520 (20 MB).
      * - concurrency: (int, default=5) Number of files to upload concurrently.
@@ -130,7 +129,9 @@ class Transfer implements PromisorInterface
             if ($options['debug'] === true) {
                 $options['debug'] = fopen('php://output', 'w');
             }
-            $this->addDebugToBefore($options['debug']);
+            if (is_resource($options['debug'])) {
+                $this->addDebugToBefore($options['debug']);
+            }
         }
     }
 
@@ -354,7 +355,8 @@ class Transfer implements PromisorInterface
     {
         $args = $this->s3Args;
         $args['Key'] = $this->createS3Key($filename);
-
+        $filename = $filename instanceof \SplFileInfo ? $filename->getPathname() : $filename;
+        
         return (new MultipartUploader($this->client, $filename, [
             'bucket'          => $args['Bucket'],
             'key'             => $args['Key'],

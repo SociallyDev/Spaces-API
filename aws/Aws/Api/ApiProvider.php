@@ -94,7 +94,7 @@ class ApiProvider
      */
     public static function defaultProvider()
     {
-        return new self(dirname(__FILE__) . '/../data', \Aws\manifest());
+        return new self(__DIR__ . '/../data', \Aws\manifest());
     }
 
     /**
@@ -165,7 +165,7 @@ class ApiProvider
     }
 
     /**
-     * Execute the the provider.
+     * Execute the provider.
      *
      * @param string $type    Type of data ('api', 'waiter', 'paginator').
      * @param string $service Service name.

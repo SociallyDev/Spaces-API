@@ -37,7 +37,7 @@ class MultipartUploader extends AbstractUploader
      *   operations. The callback should have a function signature like
      *   `function (Aws\Command $command) {...}`.
      * - bucket: (string, required) Name of the bucket to which the object is
-     *   being uploaded.
+     *   being uploaded, or an S3 access point ARN.
      * - concurrency: (int, default=int(5)) Maximum number of concurrent
      *   `UploadPart` operations allowed during the multipart upload.
      * - key: (string, required) Key to use for the object being uploaded.
@@ -48,6 +48,9 @@ class MultipartUploader extends AbstractUploader
      *   options detailed above to update the commands directly.
      * - part_size: (int, default=int(5242880)) Part size, in bytes, to use when
      *   doing a multipart upload. This must between 5 MB and 5 GB, inclusive.
+     * - prepare_data_source: (callable) Callback to invoke before starting the
+     *   multipart upload workflow. The callback should have a function
+     *   signature like `function () {...}`.
      * - state: (Aws\Multipart\UploadState) An object that represents the state
      *   of the multipart upload and that is used to resume a previous upload.
      *   When this option is provided, the `bucket`, `key`, and `part_size`

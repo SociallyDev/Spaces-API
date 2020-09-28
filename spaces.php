@@ -1,527 +1,368 @@
 <?php
+/*
+Makes interacting with DigitalOcean Spaces super easy.
+*/
 
-class SpacesConnect {
+
+
+/*
+A helper function just to tidy everything up a bit.
+*/
+function Spaces($accessKey, $secretKey, $host = "digitaloceanspaces.com") { return new Spaces($accessKey, $secretKey, $host); }
+
+
+
+/*
+We're all Devs here, right?
+If not, this creates a class that can be called to connect to your Spaces instaces.
+*/
+class Spaces {
+  private $accessKey;
+  private $secretKey;
+  private $host;
+
+
+
   /*
-  An API wrapper for AWS, makes working with DigitalOcean's Spaces super easy.
-  Written by Devang Srivastava for Dev Uncoded.
-  Available under MIT License ( https://opensource.org/licenses/MIT )
+  Takes your secrets.
   */
+  function __construct($accessKey, $secretKey, $host = "digitaloceanspaces.com") {
+    $this->accessKey = $accessKey;
+    $this->secretKey = $secretKey;
+    $this->host = $host;
 
-    function __construct($access_key, $secret_key, $spaceName = "", $region = "nyc3", $host = "digitaloceanspaces.com") {
+    //Load the underlying AWS class.
+    if(!class_exists("Aws\S3\S3Client")) { require_once(dirname(__FILE__)."/aws/aws-autoloader.php"); }
 
-        //Only pulled if an AWS class doesn't already exist.
-        $non_composer_aws_lib = dirname(__FILE__)."/aws/autoloader.php";
+    //Create an S3 instance.
+    $this->s3 = new \Aws\S3\S3Client([
+      "version" => "2006-03-01",
+      "region" => "us-east-1",
+      "endpoint" => "https://ams3.".$host,
+      "credentials" => ["key" => $accessKey, "secret" => $secretKey],
+      "ua_append" => "SociallyDev-Spaces-API/2"
+    ]);
+  }
 
-        if(!empty($spaceName)) {
-          $endpoint = "https://".$spaceName.".".$region.".".$host;
-        }
-        else {
-          $endpoint = "https://".$region.".".$host;
-        }
-        if(!class_exists('Aws\S3\S3Client')) {
-           if(file_exists($non_composer_aws_lib)) {
-             require_once($non_composer_aws_lib);
-           }
-           else {
-             throw new SpacesAPIException(@json_encode(["error" => ["message" => "No AWS class loaded.", "code" => "no_aws_class", "type" => "init"]]));
-           }
-        }
-        try {
-          $this->client = Aws\S3\S3Client::factory(array(
-            'region' => $region,
-            'version' => 'latest',
-            'endpoint' => $endpoint,
-            'credentials' => array(
-                      'key'    => $access_key,
-                      'secret' => $secret_key,
-                  ),
-            'bucket_endpoint' => true,
-            'signature_version' => 'v4-unsigned-body'
-          ));
-        } catch (\Exception $e) {
-          $this->HandleAWSException($e);
-        }
-        $this->space = $spaceName;
-        $this->access_key = $access_key;
-        $this->secret_key = $secret_key;
-        $this->host = $host;
-        $this->region = $region;
+
+
+  /*
+  Lists all your Spaces.
+  */
+  function list() {
+    return SpacesResult($this->s3->listBuckets())["Buckets"];
+  }
+
+
+
+  /*
+  Creates a single Space instance.
+  Automatically figures out the region if not provided.
+  */
+  function space($name, $region = "ams3") {
+    return new Space($name, $region, $this->accessKey, $this->secretKey, $this->host);
+  }
+
+
+
+  /*
+  Creates a new Space & returns a Space instance.
+  */
+  function create($name, $region, $privacy = "private") {
+    $space = $this->space($name, $region);
+    $space->create($privacy);
+    return $space;
+  }
+}
+
+
+
+/*
+Handles single Space operations.
+*/
+class Space {
+
+
+
+  /*
+  Stores the arguments needed.
+  Also creates another S3 instance for this region.
+  */
+  function __construct($name, $region, $accessKey, $secretKey, $host) {
+    $this->name = $name;
+    //$this->region = $region;
+    $this->s3 = new \Aws\S3\S3Client([
+      "version" => "2006-03-01",
+      "region" => "us-east-1",
+      "endpoint" => "https://".$region.".".$host,
+      "credentials" => ["key" => $accessKey, "secret" => $secretKey],
+      "ua_append" => "SociallyDev-Spaces-API/2"
+    ]);
+  }
+
+
+
+  /*
+  Creates this Space.
+  */
+  function create($privacy = "private") {
+    if($privacy == "public") { $privacy = "public-read"; }
+
+    return $this->s3->createBucket([
+      "ACL" => $privacy,
+      "Bucket" => $this->name
+    ])->toArray()["@metadata"]["effectiveUri"];
+  }
+
+
+
+  /*
+  Deletes this Space.
+  */
+  function destroy() {
+    $this->s3->deleteMatchingObjects($this->name, "", "(.*?)");
+    $this->s3->deleteBucket(["Bucket" => $this->name]);
+    return true;
+  }
+
+
+
+  /*
+  Downloads entire Space to a directory.
+  */
+  function downloadToDirectory($directory, $filesStartingAs = "") {
+    $this->s3->downloadBucket($directory, $this->name, $filesStartingAs);
+    return true;
+  }
+
+
+
+  /*
+  Uploads an entire directory to Space.
+  */
+  function uploadDirectory($directory, $prependPrefix = "") {
+    $this->s3->uploadDirectory($directory, $this->name, $prependPrefix);
+    return true;
+  }
+
+
+
+  /*
+  Uploads text.
+  */
+  function upload($text, $saveAs, $privacy = "private") {
+    if($privacy == "public") { $privacy = "public-read"; }
+
+    return SpacesResult($this->s3->upload($this->name, $saveAs, $text, $privacy));
+  }
+
+
+
+  /*
+  Uploads a file.
+  */
+  function uploadFile($filePath, $saveAs = "", $privacy = "private") {
+    if(empty($saveAs)) { $saveAs = $filePath; }
+    if($privacy == "public") { $privacy = "public-read"; }
+
+    $content = fopen($filePath, "r");
+    $result = $this->s3->upload($this->name, $saveAs, $content, $privacy);
+
+    fclose($content);
+    return SpacesResult($result);
+  }
+
+
+
+  /*
+  Downloads a file.
+  */
+  function downloadFile($file, $saveTo = false) {
+    if(!$saveTo) {
+      //Directly return file content.
+      return $this->s3->getObject(["Bucket" => $this->name, "Key" => $file])["Body"]->getContents();
+    }
+    //Save to a file on disk.
+    return SpacesResult($this->s3->getObject(["Bucket" => $this->name, "Key" => $file, "SaveAs" => $saveTo]));
+  }
+
+
+
+  /*
+  Copies a file.
+  */
+  function copyFile($filePath, $saveAs, $toSpace = "", $privacy = "private") {
+    if(!$toSpace) { $toSpace = $this->name; }
+    if($privacy == "public") { $privacy = "public-read"; }
+
+    return SpacesResult($this->s3->copy($this->name, $filePath, $toSpace, $saveAs, $privacy));
+  }
+
+
+
+  /*
+  Lists all files.
+  */
+  function listFiles($ofFolder = "", $autoIterate = true, $continueAfter = null) {
+    $data = $this->s3->listObjectsV2(["Bucket" => $this->name, "Prefix" => $ofFolder, "MaxKeys" => 1000, "FetchOwner" => false, "ContinuationToken" => $continueAfter]);
+    $result = SpacesResult($data);
+    if($autoIterate && $data["NextContinuationToken"]) {
+      $result["Contents"] = array_merge($result["Contents"], $this->listFiles($ofFolder, true, $data["NextContinuationToken"]));
     }
 
-
-    /*
-      Creates a Space.
-    */
-    function CreateSpace($spaceName, $region = "") {
-        if(empty($region)) {
-          $region = $this->region;
-        }
-        $current_space = $this->space;
-        try {
-          $this->SetSpace($spaceName);
-          $success = $this->client->createBucket(array('Bucket' => $spaceName));
-          $this->client->waitUntil('BucketExists', array('Bucket' => $spaceName));
-          $this->SetSpace($current_space);
-          return $this->ObjReturn($success->toArray());
-        } catch (\Exception $e) {
-          $this->HandleAWSException($e);
-        }
-    }
-
-    /*
-      Lists all spaces owned by you in the region.
-    */
-    function ListSpaces() {
-        $current_space = $this->space;
-        try {
-          $this->SetSpace(NULL);
-          $spaceList = $this->client->listBuckets();
-          $this->SetSpace($current_space);
-          return $this->ObjReturn($spaceList->toArray());
-        } catch (\Exception $e) {
-          $this->HandleAWSException($e);
-        }
-    }
-
-    /*
-      Shorthand for SetSpace - Change your current Space, Region and/or Host.
-    */
-    function ChangeSpace($spaceName, $region = "", $host = "") {
-      return SetSpace($spaceName, $region, $host);
-    }
-
-    /*
-      Changes your current Space, Region and/or Host.
-    */
-    function SetSpace($spaceName, $region = "", $host = "") {
-        if(empty($region)) { $region = $this->region; }
-        if(empty($host)) { $host = $this->host; }
-        if(!empty($spaceName)) {
-          $endpoint = "https://".$spaceName.".".$region.".".$host;
-          $this->space = $spaceName;
-        } else {
-          $endpoint = "https://".$region.".".$host;
-          $this->space = "";
-        }
-        try {
-          $this->client = Aws\S3\S3Client::factory(array(
-            'region' => $region,
-            'version' => 'latest',
-            'endpoint' => $endpoint,
-            'credentials' => array(
-                      'key'    => $this->access_key,
-                      'secret' => $this->secret_key,
-                  ),
-            'bucket_endpoint' => true,
-            'signature_version' => 'v4-unsigned-body'
-          ));
-          return $this->ObjReturn(true);
-        } catch (\Exception $e) {
-          $this->HandleAWSException($e);
-        }
-    }
-
-    /*
-      Fetches the current Space's name.
-    */
-    function GetSpaceName() {
-        return $this->ObjReturn($this->space);
-    }
+    if($autoIterate) { return $result["Contents"]; }
+    return $result;
+  }
 
 
-    /*
-      Downloads the whole Space to a directory.
-    */
-    function DownloadSpaceToDirectory($pathToDirectory) {
-      try {
-        $this->client->downloadBucket($pathToDirectory, $this->space);
-        return $this->ObjReturn(true);
-      } catch (\Exception $e) {
-        $this->HandleAWSException($e);
+
+  /*
+  Checks if a file exists.
+  */
+  function fileExists($path) {
+    return $this->s3->doesObjectExist($this->name, $path);
+  }
+
+
+
+  /*
+  Gets info on a file.
+  */
+  function fileInfo($path) {
+    return SpacesResult($this->s3->headObject([
+      "Bucket" => $this->name,
+      "Key" => $path
+    ]));
+  }
+
+
+
+  /*
+  Creates a non-signed view/download URL.
+  */
+  function url($path) {
+    return $this->s3->getObjectUrl($this->name, $path);
+  }
+
+
+
+  /*
+  Creates a signed view/download URL.
+  */
+  function signedURL($path, $validFor = "15 minutes") {
+    return (string) $this->s3->createPresignedRequest($this->s3->getCommand("GetObject", ["Bucket" => $this->name, "Key" => $path]), $validFor)->getUri();
+  }
+
+
+
+  /*
+  Deletes multiple files.
+  */
+  function deleteFolder($prefixOrPath) {
+    $this->s3->deleteMatchingObjects($this->name, $prefixOrPath);
+    return true;
+  }
+
+
+
+  /*
+  Deletes a single file.
+  */
+  function deleteFile($path) {
+    $this->s3->deleteObject([
+      "Bucket" => $this->name,
+      "Key" => $path
+    ]);
+    return true;
+  }
+
+
+
+  /*
+  Changes a file's ACL (Privacy).
+  */
+  function filePrivacy($file, $privacy) {
+    if($privacy == "public") { $privacy = "public-read"; }
+    $this->s3->putObjectAcl(["Bucket" => $this->name, "Key" => $file, "ACL" => $privacy]);
+    return true;
+  }
+
+
+
+  /*
+  Changes this Space's ACL (Privacy).
+  */
+  function privacy($privacy) {
+    if($privacy == "public") { $privacy = "public-read"; }
+    $this->s3->putBucketAcl(["Bucket" => $this->name, "ACL" => $privacy]);
+    return true;
+  }
+
+
+
+  /*
+  Gets this Space's CORS rules.
+  */
+  function getCORS() {
+    return SpacesResult($this->s3->getBucketCors(["Bucket" => $this->name]))["CORSRules"];
+  }
+
+
+
+  /*
+  Sets this Space's CORS rules.
+  */
+  function setCORS($rules = []) {
+    foreach ($rules as $ogKey => $rule) {
+      foreach ($rule as $key => $value) {
+        if($key == "headers") { $rules[$ogKey]["AllowedHeaders"] = $value; }
+        else if($key == "methods") { $rules[$ogKey]["AllowedMethods"] = $value; }
+        else if($key == "origins") { $rules[$ogKey]["AllowedOrigins"] = $value; }
+        else if($key == "exposeHeaders" || $key == "expose") { $rules[$ogKey]["ExposeHeaders"] = $value; }
+        else if($key == "max") { $rules[$ogKey]["MaxAgeSeconds"] = $value; }
       }
     }
 
-    /*
-      Deletes the current Space.
-    */
-    function DestroyThisSpace() {
-        try {
-          $objects = $this->ListObjects();
-          foreach ($objects as $value) {
-            $key = $value["Key"];
-            $this->DeleteObject($key);
-          }
-          $this->client->deleteBucket(array('Bucket' => $this->space));
-          $this->client->waitUntil('BucketNotExists', array('Bucket' => $this->space));
-         return $this->ObjReturn(true);
-         }
-         catch (\Exception $e) {
-          $this->HandleAWSException($e);
-         }
-    }
+    $this->s3->putBucketCors(["Bucket" => $this->name, "CORSConfiguration" => ["CORSRules" => $rules]]);
+    return true;
+  }
 
 
 
-
-    /*
-      Lists all objects.
-    */
-    function ListObjects($of_directory = "") {
-      try {
-         $objects = $this->client->getIterator('ListObjects', array(
-             'Bucket' => $this->space,
-             "Prefix" => $of_directory,
-         ));
-         $objectArray = array();
-         foreach ($objects as $object) {
-           $objectArray[] = $object;
-         }
-         return $this->ObjReturn($objectArray);
-       }
-       catch (\Exception $e) {
-        $this->HandleAWSException($e);
-       }
-    }
-
-    /*
-      Checks whether an object exists.
-    */
-    function DoesObjectExist($objectName) {
-      try {
-         return $this->ObjReturn($this->client->doesObjectExist($this->space, $objectName));
-       }
-       catch (\Exception $e) {
-        $this->HandleAWSException($e);
-       }
-    }
-
-    /*
-      Fetches an object's details.
-    */
-    function GetObject($file_name = "") {
-      try {
-        $result = $this->client->getObject([
-          'Bucket' => $this->space,
-          'Key' => $file_name,
-         ]);
-         return $this->ObjReturn($result->toArray());
-       }
-       catch (\Exception $e) {
-        $this->HandleAWSException($e);
-       }
-    }
-
-    /*
-      Makes an object private, (restricted) access.
-    */
-    function MakePrivate($file_path = "") {
-      try {
-        return $this->PutObjectACL($file_path, ["ACL" => "private"]);
-       }
-       catch (\Exception $e) {
-        $this->HandleAWSException($e);
-       }
-    }
-
-    /*
-      Makes an object public anyone can access.
-    */
-    function MakePublic($file_path = "") {
-      try {
-        return $this->PutObjectACL($file_path, ["ACL" => "public-read"]);
-       }
-       catch (\Exception $e) {
-        $this->HandleAWSException($e);
-       }
-    }
-
-    /*
-      Deletes an object.
-    */
-    function DeleteObject($file_path = "", $recursive = false) {
-      try {
-	    if ($recursive) return $this->ObjReturn($this->client->deleteMatchingObjects(
-          $this->space,
-          $file_path
-        ));
-        return $this->ObjReturn($this->client->deleteObject([
-        'Bucket' => $this->space,
-        'Key' => $file_path,
-        ])->toArray());
-       }
-       catch (\Exception $e) {
-        $this->HandleAWSException($e);
-       }
-    }
-
-    /*
-      Upload a file.
-    */
-    function UploadFile($pathToFile, $access = "private", $save_as = "", $mime_type = "application/octet-stream") {
-        if(empty($save_as)) {
-          $save_as = $pathToFile;
-        }
-        if($access == "public") {
-          $access = "public-read";
-        }
-        $is_file = strlen($pathToFile) <= PHP_MAXPATHLEN && is_file($pathToFile);
-        if(!$is_file){
-          $file = $pathToFile;
-        }else{
-          $file = fopen($pathToFile, 'r+');
-        }
-        try {
-          $result = $this->client->putObject(array(
-              'Bucket'      => $this->space,
-              'Key'         => $save_as,
-              'Body'        => $file,
-              'ACL'         => $access,
-              'ContentType' => $mime_type
-          ));
-
-          $this->client->waitUntil('ObjectExists', array(
-              'Bucket' => $this->space,
-              'Key'    => $save_as
-          ));
-
-          return $this->ObjReturn($result->toArray());
-         }
-         catch (\Exception $e) {
-          $this->HandleAWSException($e);
-         } finally {
-            if ($is_file) {
-                fclose($file);
-            }
-         }
-    }
-
-    /*
-      Download a file.
-    */
-    function DownloadFile($fileName, $destinationPath = false) {
-      try {
-        if(!$destinationPath) {
-              $result = $this->client->getObject(array(
-                  'Bucket' => $this->space,
-                  'Key'    => $fileName,
-              ));
-
-              return $result['Body'];
-          }else{
-              $result = $this->client->getObject(array(
-                  'Bucket' => $this->space,
-                  'Key'    => $fileName,
-                  'SaveAs' => $destinationPath
-              ));
-
-              return $this->ObjReturn($result->toArray());
-          }
-       }
-       catch (\Exception $e) {
-        $this->HandleAWSException($e);
-       }
-    }
-
-    /*
-      Uploads all contents of a directory.
-    */
-    function UploadDirectory($directory, $keyPrefix = "") {
-      try {
-        return $this->client->uploadDirectory($directory, $this->space, $keyPrefix);
-       }
-       catch (\Exception $e) {
-        $this->HandleAWSException($e);
-       }
-    }
+  /*
+  Gets bucket lifecycle rules.
+  */
+  function getLifecycleRules() {
+    return $this->s3->getBucketLifecycle(["Bucket" => $this->name]);
+  }
 
 
 
-
-
-    /*
-      Lists the CORS policy of the Space.
-    */
-    function ListCORS() {
-      try {
-        $cors = $this->client->getBucketCors([
-          'Bucket' => $this->space,
-         ]);
-         return $this->ObjReturn($cors->toArray());
-       }
-       catch (\Exception $e) {
-        $this->HandleAWSException($e);
-       }
-    }
-
-    /*
-      Updates the CORS policy of the Space.
-    */
-    function PutCORS($cors_rules = "") {
-      if(empty($cors_rules)) {
-        $cors_rules = [
-         'AllowedMethods' => ['GET'],
-         'AllowedOrigins' => ['*'],
-         'ExposeHeaders' => ['Access-Control-Allow-Origin'],
-         ];
-        }
-        try {
-          $result = $this->client->putBucketCors([
-            'Bucket' => $this->space,
-            'CORSConfiguration' => ['CORSRules' => [$cors_rules]]
-          ]);
-          return $this->ObjReturn($result->toArray());
-         }
-         catch (\Exception $e) {
-          $this->HandleAWSException($e);
-         }
-    }
-
-    /*
-      Fetches the ACL (Access Control Lists) of the Space.
-    */
-    function ListSpaceACL() {
-      try {
-        $acl = $this->client->getBucketAcl([
-          'Bucket' => $this->space,
-         ]);
-        return $this->ObjReturn($acl->toArray());
-       }
-       catch (\Exception $e) {
-        $this->HandleAWSException($e);
-       }
-    }
-
-    /*
-      Updates the ACL (Access Control Lists) of the Space.
-    */
-    function PutSpaceACL($params) {
-      try {
-        $acl = $this->client->putBucketAcl($params);
-        return $this->ObjReturn($acl->toArray());
-       }
-       catch (\Exception $e) {
-        $this->HandleAWSException($e);
-       }
-    }
-
-    /*
-      Lists an object's ACL (Access Control Lists).
-    */
-    function ListObjectACL($file) {
-      try {
-        $result = $this->client->getObjectAcl([
-           'Bucket' => $this->space,
-           'Key' => $file,
-        ]);
-        return $this->ObjReturn($result->toArray());
-       }
-       catch (\Exception $e) {
-        $this->HandleAWSException($e);
-       }
-    }
-
-    /*
-      Updates an object's ACL (Access Control Lists).
-    */
-    function PutObjectACL($file, $acl) {
-      try {
-        $acl = array_merge(array("Bucket" => $this->space, "Key" => $file), $acl);
-        $result = $this->client->putObjectAcl($acl);
-        return $this->ObjReturn($result->toArray());
-       }
-       catch (\Exception $e) {
-        $this->HandleAWSException($e);
-       }
-    }
-
-
-
-    /*
-      Creates a temporary URL for a file (Mainly for accessing private files).
-    */
-    function CreateTemporaryURL($file_name = "", $valid_for = "1 hour") {
-        $cmd = $this->client->getCommand('GetObject', [
-            'Bucket' => $this->space,
-            'Key'    => $file_name
-        ]);
-        $request = $this->client->createPresignedRequest($cmd, $valid_for);
-        return (string)$request->getUri();
-    }
-
-
-    /*
-      INTERNAL FUNCTION - Returns a standardized object.
-    */
-    function ObjReturn($return) {
-      $return = @json_decode(@json_encode($return), true);
-      $return = $this->AWSTime($return);
-      return $return;
-    }
-
-    /*
-      INTERNAL FUNCTION - Converts all AWS time values to unix timestamps.
-    */
-    function AWSTime($obj) {
-      $time_keys = ["LastModified", "CreationDate", "Expires", "last-modified", "date", "Expiration"];
-      if(is_array($obj)) {
-        foreach ($obj as $key => $value) {
-          if(is_array($obj[$key])) {
-            $obj[$key] = $this->AWSTime($obj[$key]);
-          }
-          else {
-            foreach ($time_keys as $time_key) {
-              if(array_key_exists($time_key, $obj) && !empty($obj[$time_key]) && !is_numeric($obj[$time_key])) {
-                  $obj[$time_key] = strtotime($obj[$time_key]);
-              }
-            }
-          }
-        }
-      }
-      return $obj;
-    }
-
-    /*
-      INTERNAL FUNCTION - Checks whether an array has any keys.
-    */
-    private function any_key_exists($keys, $arr) {
-      foreach ($keys as $key) {
-        if(array_key_exists($key, $arr)) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    /*
-      INTERNAL FUNCTION - Standardizes AWS errors.
-    */
-    function HandleAWSException($e) {
-      if(get_class($e) == "Aws\S3\Exception\S3Exception") {
-        $error["error"] = [
-          "message" => $e->getAwsErrorMessage(),
-          "code" => $e->getAwsErrorCode(),
-          "type" => $e->getAwsErrorType(),
-          "http_code" => $e->getStatusCode(),
-        ];
-       }
-      else {
-        throw $e;
-      }
-      throw new SpacesAPIException(@json_encode($error));
-    }
+  /*
+  Sets bucket lifecycle rules.
+  NOTE: Currently not used as it kept throwing "MalformedXML error".
+  */
+  function setLifecycleRules($rules) {
+    return $this->s3->putBucketLifecycle(["Bucket" => $this->name, "LifecycleConfiguration" => ["Rules" => $rules]]);
+  }
 
 }
 
-/*
-  INTERNAL FUNCTION - Throws error for catching.
-*/
-class SpacesAPIException extends \Exception {
-    public function __construct($message, $code = 0, Exception $previous = null) {
-        parent::__construct($message, $code, $previous);
-    }
 
-    public function GetError() {
-      $error = @json_decode($this->getMessage(), true);
-      return $error["error"];
+
+/*
+Handles creating a standard result.
+*/
+function SpacesResult($data) {
+  if(gettype($data) == "object" && get_class($data) == "Aws\Result") { $data = $data->toArray(); }
+  foreach ($data as $key => $value) {
+    if(is_array($value)) {
+      $data[$key] = SpacesResult($value);
+      continue;
     }
+    if(gettype($value) == "object" && get_class($value) == "Aws\Api\DateTimeResult") {
+      $data[$key] = strtotime($value);
+    }
+  }
+  return $data;
 }

@@ -6,11 +6,19 @@ use Aws\Crypto\Cipher\Cbc;
 use GuzzleHttp\Psr7\Stream;
 
 /**
+ * Legacy abstract encryption client. New workflows should use
+ * AbstractCryptoClientV2.
+ *
+ * @deprecated
  * @internal
  */
 abstract class AbstractCryptoClient
 {
-    private static $supportedCiphers = ['cbc', 'gcm'];
+    public static $supportedCiphers = ['cbc', 'gcm'];
+
+    public static $supportedKeyWraps = [
+        KmsMaterialsProvider::WRAP_ALGORITHM_NAME
+    ];
 
     /**
      * Returns if the passed cipher name is supported for encryption by the SDK.
@@ -35,10 +43,7 @@ abstract class AbstractCryptoClient
      *
      * @return string
      */
-    protected function getCipherOpenSslName($cipherName, $keySize)
-    {
-        return "aes-{$keySize}-{$cipherName}";
-    }
+    abstract protected function getCipherOpenSslName($cipherName, $keySize);
 
     /**
      * Constructs a CipherMethod for the given name, initialized with the other
@@ -53,18 +58,7 @@ abstract class AbstractCryptoClient
      *
      * @internal
      */
-    protected function buildCipherMethod($cipherName, $iv, $keySize)
-    {
-        switch ($cipherName) {
-            case 'cbc':
-                return new Cbc(
-                    $iv,
-                    $keySize
-                );
-            default:
-                return null;
-        }
-    }
+    abstract protected function buildCipherMethod($cipherName, $iv, $keySize);
 
     /**
      * Performs a reverse lookup to get the openssl_* cipher name from the
@@ -76,18 +70,7 @@ abstract class AbstractCryptoClient
      *
      * @internal
      */
-    protected function getCipherFromAesName($aesName)
-    {
-        switch ($aesName) {
-            case 'AES/GCM/NoPadding':
-                return 'gcm';
-            case 'AES/CBC/PKCS5Padding':
-                return 'cbc';
-            default:
-                throw new \RuntimeException('Unrecognized or unsupported'
-                    . ' AESName for reverse lookup.');
-        }
-    }
+    abstract protected function getCipherFromAesName($aesName);
 
     /**
      * Dependency to provide an interface for building an encryption stream for
@@ -119,8 +102,8 @@ abstract class AbstractCryptoClient
      *
      * @param string $cipherText Plain-text data to be decrypted using the
      *                           materials, algorithm, and data provided.
-     * @param MaterialsProvider $provider A provider to supply and encrypt
-     *                                    materials used in encryption.
+     * @param MaterialsProviderInterface $provider A provider to supply and encrypt
+     *                                             materials used in encryption.
      * @param MetadataEnvelope $envelope A storage envelope for encryption
      *                                   metadata to be read from.
      * @param array $cipherOptions Additional verification options.
@@ -131,7 +114,7 @@ abstract class AbstractCryptoClient
      */
     abstract public function decrypt(
         $cipherText,
-        MaterialsProvider $provider,
+        MaterialsProviderInterface $provider,
         MetadataEnvelope $envelope,
         array $cipherOptions = []
     );

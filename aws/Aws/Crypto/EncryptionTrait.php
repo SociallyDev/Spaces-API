@@ -48,7 +48,7 @@ trait EncryptionTrait
      *
      * @internal
      */
-    protected function encrypt(
+    public function encrypt(
         Stream $plaintext,
         array $cipherOptions,
         MaterialsProvider $provider,
@@ -64,7 +64,9 @@ trait EncryptionTrait
         if (empty($cipherOptions['Cipher'])) {
             throw new \InvalidArgumentException('An encryption cipher must be'
                 . ' specified in the "cipher_options".');
-        } elseif (!self::isSupportedCipher($cipherOptions['Cipher'])) {
+        }
+
+        if (!self::isSupportedCipher($cipherOptions['Cipher'])) {
             throw new \InvalidArgumentException('The cipher requested is not'
                 . ' supported by the SDK.');
         }
@@ -75,7 +77,9 @@ trait EncryptionTrait
         if (!is_int($cipherOptions['KeySize'])) {
             throw new \InvalidArgumentException('The cipher "KeySize" must be'
                 . ' an integer.');
-        } elseif (!MaterialsProvider::isSupportedKeySize(
+        }
+
+        if (!MaterialsProvider::isSupportedKeySize(
             $cipherOptions['KeySize']
         )) {
             throw new \InvalidArgumentException('The cipher "KeySize" requested'
@@ -112,8 +116,6 @@ trait EncryptionTrait
         $envelope[MetadataEnvelope::CONTENT_CRYPTO_SCHEME_HEADER] = $aesName;
         $envelope[MetadataEnvelope::UNENCRYPTED_CONTENT_LENGTH_HEADER] =
             strlen($plaintext);
-        $envelope[MetadataEnvelope::UNENCRYPTED_CONTENT_MD5_HEADER] =
-            base64_encode(md5($plaintext));
         $envelope[MetadataEnvelope::MATERIALS_DESCRIPTION_HEADER] =
             json_encode($materialsDescription);
         if (!empty($cipherOptions['Tag'])) {
@@ -158,6 +160,14 @@ trait EncryptionTrait
                     $cipherOptions['TagLength'],
                     $cipherOptions['KeySize']
                 );
+
+                if (!empty($cipherOptions['Aad'])) {
+                    trigger_error("'Aad' has been supplied for content encryption"
+                        . " with " . $cipherTextStream->getAesName() . ". The"
+                        . " PHP SDK encryption client can decrypt an object"
+                        . " encrypted in this way, but other AWS SDKs may not be"
+                        . " able to.", E_USER_WARNING);
+                }
 
                 $appendStream = new AppendStream([
                     $cipherTextStream->createStream()

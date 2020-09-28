@@ -3,8 +3,6 @@ namespace Aws;
 
 use Aws\Endpoint\PartitionEndpointProvider;
 use Aws\Endpoint\PartitionInterface;
-use GuzzleHttp\Promise\FulfilledPromise;
-use Psr\Http\Message\RequestInterface;
 
 class MultiRegionClient implements AwsClientInterface
 {
@@ -22,6 +20,8 @@ class MultiRegionClient implements AwsClientInterface
     private $config;
     /** @var HandlerList */
     private $handlerList;
+    /** @var array */
+    private $aliases;
 
     public static function getArguments()
     {
