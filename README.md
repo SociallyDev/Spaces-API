@@ -56,7 +56,7 @@ $my_space->upload("Super cool content", "example.txt");
 There are two ways to install Spaces-API. You can either download the project & put it directly in your code's folder, or you can use [Composer](https://getcomposer.org).
 
 &nbsp;
-### a) The Manual Way
+### a) The Manual Method
 
 1) [Download Spaces-API](https://github.com/SociallyDev/Spaces-API/archive/master.zip) & place it in your project.
 2) Load it from your code:
@@ -70,7 +70,7 @@ require_once("spaces.php");
 1) Make sure you have [Composer](https://getcomposer.org).
 2) Install Spaces-API:
 ```
-composer require sociallydev/spaces-api:dev-master
+composer require sociallydev/spaces-api:v2
 ```
 3) Make sure your code has the Composer autoloader:
 ```php
