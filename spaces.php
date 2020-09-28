@@ -49,7 +49,7 @@ class Spaces {
   /*
   Lists all your Spaces.
   */
-  function list() {
+  function listSpaces() {
     return SpacesResult($this->s3->listBuckets())["Buckets"];
   }
 

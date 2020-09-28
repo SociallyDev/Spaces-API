@@ -142,7 +142,7 @@ $my_space = $spaces->space("my-space", "nyc3");
 $spaces = Spaces("ACCESS KEY", "SECRET KEY");
 
 //Returns an array of all available Spaces.
-$spaces->list();
+$spaces->listSpaces();
 ```
 
 &nbsp;
