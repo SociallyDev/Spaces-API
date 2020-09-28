@@ -247,7 +247,6 @@ $my_space = Spaces("ACCESS KEY", "SECRET KEY")->space("my_space", "nyc3");
 //Returns true if this file exists, otherwise false.
 $my_space->fileExists("my-file.txt");
 ```
-* Because of how Spaces/S3 handles objects, this'll return true for folders that exist.
 
 &nbsp;
 ## Get info on a file
