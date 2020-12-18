@@ -168,7 +168,7 @@ class Space {
     $content = fopen($filePath, "r");
     $result = $this->s3->upload($this->name, $saveAs, $content, $privacy);
 
-    fclose($content);
+    if(is_resource($content)) { fclose($content); }
     return SpacesResult($result);
   }
 
