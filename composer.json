@@ -4,7 +4,7 @@
   "type": "library",
   "require": {
     "php": ">=5.4.0",
-    "aws/aws-sdk-php": "^3.52",
+    "aws/aws-sdk-php": "3.52.0",
     "guzzlehttp/guzzle": "^6.3",
     "mtdowling/jmespath.php": "^2.4",
     "psr/http-message": "^1.0"
