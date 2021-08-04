@@ -70,7 +70,7 @@ require_once("spaces.php");
 1) Make sure you have [Composer](https://getcomposer.org).
 2) Install Spaces-API:
 ```
-composer require sociallydev/spaces-api:v2
+composer require sociallydev/spaces-api:v2.0.1
 ```
 3) Make sure your code has the Composer autoloader:
 ```php
