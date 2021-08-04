@@ -171,10 +171,11 @@ $my_space->uploadFile("path/to/my/file.txt", "path/on/space.txt", "private");
 $my_space = Spaces("ACCESS KEY", "SECRET KEY")->space("my_space", "nyc3");
 
 //Upload a local stored file.
-$my_space->upload("my content", "path/on/space.txt", "private");
+$my_space->upload("my content", "path/on/space.txt", "private", ["ContentType" => "text/plain"]);
 ```
 * The first argument (Content) can be a string, but it can also be a StreamInterface or PHP stream resource.
 * The third argument (File privacy) is optional. It defaults to private.
+* The fourth argument (Params) is optional. You can find the options [here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#upload-property).
 * Returns available info on the file.
 
 &nbsp;
