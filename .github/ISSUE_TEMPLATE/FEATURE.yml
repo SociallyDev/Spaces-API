@@ -1,0 +1,14 @@
+name: Feature request
+description: Request new functionality
+title: "[Feature]: "
+labels: [ new ]
+assignees:
+  - MacroMan
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Description
+      description: Please provide as much detail as you can about what you'd like to see. If you can, a pull request is the fastest way to add new features.
+    validations:
+      required: true
