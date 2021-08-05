@@ -5,39 +5,27 @@ labels: [ bug, triage ]
 assignees:
   - MacroMan
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Please provide all information required to reproduce the bug
   - type: textarea
     id: what-happened
     attributes:
       label: What happened?
-      description: Also tell us, what did you expect to happen?
-      placeholder: Tell us what you see!
-      value: "A bug happened!"
+      description: Please provide all information required to reproduce the bug
     validations:
       required: true
   - type: dropdown
     id: version
     attributes:
       label: Version
-      description: What version of Spaces-API are you running?
+      description: What version of Spaces-API is this occuring on?
       options:
         - 2.0.1
         - 2.0.0
     validations:
       required: true
-  - type: dropdown
-    id: php
+  - type: input
+    id: php-version
     attributes:
-      label: What version of PHP are you using/seeing the bug on?
-      description: We do not accept bug reports for PHP versions less than 7.3
-      multiple: true
-      options:
-        - '8.0'
-        - '7.4'
-        - '7.3',
+      label: What version of PHP are you using?
   - type: textarea
     id: logs
     attributes:
