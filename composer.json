@@ -1,17 +1,33 @@
 {
   "name": "sociallydev/spaces-api",
-  "description": "An API wrapper for DigitalOcean's Spaces object storage designed for easy use",
+  "description": "Library for accessing Digital Ocean spaces",
+  "version":"3.0.0",
   "type": "library",
-  "require": {
-    "php": ">=5.4.0",
-    "aws/aws-sdk-php": "^3.52",
-    "guzzlehttp/guzzle": "^6.2.1|^7.0",
-    "mtdowling/jmespath.php": "^2.4",
-    "psr/http-message": "^1.0"
-  },
   "license": "MIT",
-  "authors": [{"name": "Devang Srivastava", "email": "hey@devang.dev", "homepage": "https://devang.dev"}],
+  "authors": [
+    {
+      "name": "Devang Srivastava",
+      "email": "hey@devang.dev",
+      "homepage": "https://devang.dev"
+    },
+    {
+      "name": "David Wakelin",
+      "email": "helllo@davidwakelin.co.uk",
+      "homepage": "https://davidwakelin.co.uk"
+    }
+  ],
   "autoload": {
-    "files": ["spaces.php"]
+    "psr-4": {
+      "SpacesAPI\\": "SpacesAPI"
+    }
+  },
+  "require": {
+    "php": ">=7.3",
+    "aws/aws-sdk-php": "^3.52"
+  },
+  "require-dev": {
+    "clean/phpdoc-md": "^0.19.1",
+    "phpunit/phpunit": "^9.5",
+    "vlucas/phpdotenv": "^5.3"
   }
 }

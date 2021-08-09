@@ -1,0 +1,12 @@
+<?php
+
+return (object)[
+    'rootNamespace' => 'SpacesAPI',
+    'destDirectory' => 'docs',
+    'format' => 'github',
+    'classes' => [
+        '\SpacesAPI\Spaces',
+        '\SpacesAPI\Space',
+        '\SpacesAPI\File',
+    ],
+];
