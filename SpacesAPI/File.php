@@ -10,6 +10,7 @@ use SpacesAPI\Exceptions\FileDoesntExistException;
  * You wouldn't normally instantiate this class directly,
  * Rather obtain an instance from `\SpacesAPI\Space::list()`, `\SpacesAPI\Spaces::file()`, `\SpacesAPI\Spaces::uploadText()` or `\SpacesAPI\Spaces::uploadFile()`
  *
+ * @property string $filename
  * @property string $expiration
  * @property string $e_tag
  * @property int $last_modified

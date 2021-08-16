@@ -1,7 +1,7 @@
 {
   "name": "sociallydev/spaces-api",
   "description": "Library for accessing Digital Ocean spaces",
-  "version":"3.0.0",
+  "version":"3.1.0",
   "type": "library",
   "license": "MIT",
   "authors": [

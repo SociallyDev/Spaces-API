@@ -332,6 +332,7 @@ List all files in the space (recursively)
 
 `array`
 
+> An array of `\SpacesAPI\File` instances indexed by the file name
 
 <hr />
 

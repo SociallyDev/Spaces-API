@@ -20,7 +20,7 @@ class FileTest extends TestCase
         $spaces = new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']);
 
         try {
-            $spaces->space('spaces-api-test')->destroySpace();
+            $spaces->space('spaces-api-test')->destroy();
         } catch (SpaceDoesntExistException $e) {
         }
 
@@ -30,7 +30,7 @@ class FileTest extends TestCase
 
     public static function tearDownAfterClass(): void
     {
-        (new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']))->space('spaces-api-test')->destroySpace();
+        (new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']))->space('spaces-api-test')->destroy();
     }
 
     public function testCanUpdatePrivacy()

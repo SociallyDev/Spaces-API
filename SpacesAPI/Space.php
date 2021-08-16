@@ -252,16 +252,16 @@ class Space
                                      ])
         );
 
-        if (!isset($data['Contents'])) {
-            return ['files' => []];
-        }
-
         $files = [
-            'files' => $data['Contents'],
+            'files' => [],
         ];
 
-        foreach ($files['files'] as $index => $fileInfo) {
-            $files['files'][$index] = new File($this, $fileInfo['Key'], $fileInfo);
+        if (!isset($data['Contents'])) {
+            return $files;
+        }
+
+        foreach ($data['Contents'] as $fileInfo) {
+            $files['files'][$fileInfo['Key']] = new File($this, $fileInfo['Key'], $fileInfo);
         }
 
         if (isset($data["NextContinuationToken"]) && $data["NextContinuationToken"] != "") {

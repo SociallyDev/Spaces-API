@@ -20,7 +20,7 @@ class SpaceTest extends TestCase
         $spaces = new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']);
 
         try {
-            $spaces->space('spaces-api-test')->destroySpace();
+            $spaces->space('spaces-api-test')->destroy();
         } catch (SpaceDoesntExistException $e) {
         }
 
@@ -29,7 +29,7 @@ class SpaceTest extends TestCase
 
     public static function tearDownAfterClass(): void
     {
-//        (new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']))->space('spaces-api-test')->destroySpace();
+//        (new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']))->space('spaces-api-test')->destroy();
     }
 
     public function testCanUpdateSpacePrivacy()
@@ -102,7 +102,11 @@ class SpaceTest extends TestCase
         $files = self::$space->listFiles()['files'];
         $this->assertIsArray($files);
         $this->assertCount(2, $files);
-        $this->assertInstanceOf(File::class, $files[0]);
+        $this->assertInstanceOf(File::class, $files[array_key_first($files)]);
+
+        foreach ($files as $filename => $file) {
+            $this->assertEquals($file->filename, $filename);
+        }
 
         foreach ($files as $file) {
             $file->delete();

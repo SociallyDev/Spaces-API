@@ -17,14 +17,14 @@ class SpacesTest extends TestCase
         $dotenv->required(['SPACES_KEY', 'SPACES_SECRET']);
 
         try {
-            (new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']))->space('spaces-api-test')->destroySpace();
+            (new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']))->space('spaces-api-test')->destroy();
         } catch (SpaceDoesntExistException $e) {
         }
     }
 
     public static function tearDownAfterClass(): void
     {
-        (new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']))->space('spaces-api-test')->destroySpace();
+        (new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']))->space('spaces-api-test')->destroy();
     }
 
     public function testAuthenticationCanFail()
@@ -68,8 +68,8 @@ class SpacesTest extends TestCase
         $this->assertIsArray($list);
 
         $spaceFound = false;
-        foreach ($list as $space) {
-            if ($space->getName() == 'spaces-api-test') {
+        foreach ($list as $name => $space) {
+            if ($name == 'spaces-api-test' && $space->getName() == 'spaces-api-test') {
                 $spaceFound = true;
             }
         }

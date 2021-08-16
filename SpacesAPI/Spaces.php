@@ -61,7 +61,7 @@ class Spaces
         $spaces = [];
 
         foreach (Result::parse($this->s3->listBuckets()['Buckets']) as $bucket) {
-            $spaces[] = new Space($this->s3, $bucket['Name']);
+            $spaces[$bucket['Name']] = new Space($this->s3, $bucket['Name']);
         }
 
         return $spaces;

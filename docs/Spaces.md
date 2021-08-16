@@ -116,7 +116,7 @@ List all your spaces
 
 `array`
 
-> An array of \SpacesAPI\Space instances
+> An array of `\SpacesAPI\Space` instances indexed by the space name
 
 
 <hr />

@@ -15,16 +15,24 @@ Obtain API keys from the [Digital Ocean Applications & API dashboard](https://cl
 ```php
 use SpacesAPI\Spaces;
 
+// Connect to a space
 $spaces = new Spaces('api-key', 'api-secret');
 $space = $spaces->space('space-name');
 
+// Download a file
 $file = $space->file('remote-file-1.txt');
 $file->download('local/file/path/file.txt');
 
+// Upload text to a file
 $file2 = $space->uploadText("Lorem ipsum","remote-file-2.txt");
+
+// Get a signed public link, valid for 2 hours
 $file2url = $file2->getSignedURL("2 hours");
 
+// Make a copy
 $file3 = $file2->copy('remote-file-3.txt');
+
+// Make a file public and get the URL
 $file3->makePublic();
 $file3url = $file3->getURL();
 ```
@@ -32,7 +40,7 @@ $file3url = $file3->getURL();
 See more examples in [docs/Examples.md](docs/Examples.md)
 
 ## Upgrading?
-Version 3 has many changes over verison 2, so we have written a [migration guide](docs/Upgrade2-3.md)
+Version 3 has many changes over version 2, so we have written a [migration guide](docs/Upgrade2-3.md)
 
 ## API reference
 * [\SpacesAPI\Spaces](docs/Spaces.md)
