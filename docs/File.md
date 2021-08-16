@@ -21,18 +21,15 @@ Rather obtain an instance from `\SpacesAPI\Space::list()`, `\SpacesAPI\Spaces::f
 | Name | Description |
 |------|-------------|
 |[__construct](#file__construct)||
-|[__get](#file__get)|Magic getter to make the properties read-only|
 |[copy](#filecopy)|Copy the file on the space|
 |[delete](#filedelete)|Permanently delete this file|
 |[download](#filedownload)|Download the file to a local location|
 |[getContents](#filegetcontents)|Get the file contents as a string|
 |[getSignedURL](#filegetsignedurl)|Get a signed URL, which will work for private files|
-|[getURL](#filegeturl)|Get the public URL
-This URL will not work if the file is private|
+|[getURL](#filegeturl)|Get the public URL. This URL will not work if the file is private|
 |[isPublic](#fileispublic)|Is this file publicly accessible|
 |[makePrivate](#filemakeprivate)|Make file non-publicly accessible|
 |[makePublic](#filemakepublic)|Make file publicly accessible|
-|[pascalCaseToCamelCase](#filepascalcasetocamelcase)||
 
 
 
