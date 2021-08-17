@@ -37,7 +37,7 @@ Rather obtain an instance from `\SpacesAPI\Spaces::space()` or `\SpacesAPI\Space
 **Description**
 
 ```php
-public __construct (\Aws\S3\S3Client $s3, string $name)
+public __construct (\Aws\S3\S3Client $s3, string $name, bool $validate = true)
 ```
 
 Load a space
@@ -51,6 +51,8 @@ rather obtain an instance from `\SpacesAPI\Spaces::space()` or `\SpacesAPI\Space
 : An authenticated S3Client instance
 * `(string) $name`
 : Space name
+* `(bool) $validate`
+: Check that the space exists. Default `true`
 
 **Return Values**
 
@@ -60,7 +62,7 @@ rather obtain an instance from `\SpacesAPI\Spaces::space()` or `\SpacesAPI\Space
 **Throws Exceptions**
 
 
-`\SpacesAPI\Exceptions\SpaceDoesntExistException` : If the space doesn't exist
+`\SpacesAPI\Exceptions\SpaceDoesntExistException` : If validation is `true` and the space doesn't exist
 
 
 <hr />
@@ -314,7 +316,7 @@ Is file listing enabled?
 **Description**
 
 ```php
-public listFiles (string $directory, string|null $continuationToken = null)
+public listFiles (string $directory = "")
 ```
 
 List all files in the space (recursively)
@@ -325,8 +327,6 @@ List all files in the space (recursively)
 
 * `(string) $directory`
 : The directory to list files in. Empty string for root directory
-* `(string|null) $continuationToken`
-: Used internally to work around request limits (1000 files per request). Leave this value `null`
 
 **Return Values**
 

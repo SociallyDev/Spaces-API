@@ -36,15 +36,16 @@ class Space
      *
      * @param \Aws\S3\S3Client $s3 An authenticated S3Client instance
      * @param string $name Space name
+     * @param bool $validate Check that the space exists
      *
-     * @throws \SpacesAPI\Exceptions\SpaceDoesntExistException
+     * @throws \SpacesAPI\Exceptions\SpaceDoesntExistException If validation is `true` and the space doesn't exist
      */
-    public function __construct(S3Client $s3, string $name)
+    public function __construct(S3Client $s3, string $name, bool $validate = true)
     {
         $this->s3 = $s3;
         $this->name = $name;
 
-        if (!$this->s3->doesBucketExist($name)) {
+        if ($validate && !$this->s3->doesBucketExist($name)) {
             throw new SpaceDoesntExistException("Space '$this->name' does not exist");
         }
     }
@@ -234,12 +235,28 @@ class Space
      * List all files in the space (recursively)
      *
      * @param string $directory The directory to list files in. Empty string for root directory
+     *
+     * @return array
+     */
+    public function listFiles(string $directory = ""): array
+    {
+        $rawFiles = $this->rawListFiles($directory);
+        $files = [];
+
+        foreach ($rawFiles as $fileInfo) {
+            $files[$fileInfo['Key']] = new File($this, $fileInfo['Key'], $fileInfo, false);
+        }
+
+        return ['files' => $files];
+    }
+
+    /**
+     * @param string $directory The directory to list files in. Empty string for root directory
      * @param string|null $continuationToken Used internally to work around request limits (1000 files per request)
      *
      * @return array
-     * @throws \SpacesAPI\Exceptions\FileDoesntExistException
      */
-    public function listFiles(string $directory = "", ?string $continuationToken = null): array
+    private function rawListFiles(string $directory = "", ?string $continuationToken = null): array
     {
         $data = Result::parse(
             $this->s3->listObjectsV2([
@@ -252,20 +269,14 @@ class Space
                                      ])
         );
 
-        $files = [
-            'files' => [],
-        ];
-
         if (!isset($data['Contents'])) {
-            return $files;
+            return [];
         }
 
-        foreach ($data['Contents'] as $fileInfo) {
-            $files['files'][$fileInfo['Key']] = new File($this, $fileInfo['Key'], $fileInfo);
-        }
+        $files = $data['Contents'];
 
         if (isset($data["NextContinuationToken"]) && $data["NextContinuationToken"] != "") {
-            $files = array_merge($files['files'], $this->listFiles($directory, $data["NextContinuationToken"])['files']);
+            $files = array_merge($files, $this->rawListFiles($directory, $data["NextContinuationToken"]));
         }
 
         return $files;
@@ -283,7 +294,7 @@ class Space
     public function uploadText(string $text, string $filename, array $params = []): File
     {
         $this->s3->upload($this->name, $filename, $text, 'private', $params);
-        return new File($this, $filename);
+        return new File($this, $filename, [], false);
     }
 
     /**
@@ -302,7 +313,7 @@ class Space
                                  'SourceFile' => $filepath,
                              ]);
 
-        return new File($this, ($filename) ?: basename($filepath));
+        return new File($this, ($filename) ?: basename($filepath), [], false);
     }
 
     /**

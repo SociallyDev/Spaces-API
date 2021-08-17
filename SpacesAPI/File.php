@@ -46,20 +46,21 @@ class File
     private $_content_length;
 
     /**
-     * @param \SpacesAPI\Space $space
-     * @param string $filename
-     * @param array $info
+     * @param \SpacesAPI\Space $space An instance of `\SpacesAPI\Space`
+     * @param string $filename The filename of a file
+     * @param array $info Any information already known about the file (eg content_length, content_type, etc). Default `[]`
+     * @param bool $validate Check that the file exists
      *
-     * @throws \SpacesAPI\Exceptions\FileDoesntExistException
+     * @throws \SpacesAPI\Exceptions\FileDoesntExistException If validation is `true` and the file doesn't exist
      */
-    public function __construct(Space $space, string $filename, array $info = [])
+    public function __construct(Space $space, string $filename, array $info = [], bool $validate = true)
     {
         $this->space = $space;
         $this->space_name = $space->getName();
         $this->s3 = $space->getS3Client();
         $this->_filename = $filename;
 
-        if (!$this->s3->doesObjectExist($this->space_name, $filename)) {
+        if ($validate && !$this->s3->doesObjectExist($this->space_name, $filename)) {
             throw new FileDoesntExistException("File $filename doesn't exist");
         }
 

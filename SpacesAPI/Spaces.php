@@ -61,7 +61,7 @@ class Spaces
         $spaces = [];
 
         foreach (Result::parse($this->s3->listBuckets()['Buckets']) as $bucket) {
-            $spaces[$bucket['Name']] = new Space($this->s3, $bucket['Name']);
+            $spaces[$bucket['Name']] = new Space($this->s3, $bucket['Name'], false);
         }
 
         return $spaces;
@@ -87,7 +87,7 @@ class Spaces
             throw new SpaceExistsException($e->getAwsErrorMessage());
         }
 
-        return new Space($this->s3, $name);
+        return new Space($this->s3, $name, false);
     }
 
     /**

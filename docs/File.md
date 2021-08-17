@@ -39,18 +39,15 @@ Rather obtain an instance from `\SpacesAPI\Space::list()`, `\SpacesAPI\Spaces::f
 **Description**
 
 ```php
- __construct (\SpacesAPI\Space $space, string $filename, array $info = [])
+ __construct (\SpacesAPI\Space $space, string $filename, array $info = [], bool $validate = true)
 ```
-
-
-
-
 
 **Parameters**
 
 * `(\SpacesAPI\Space) $space` : An instance of `\SpacesAPI\Space`
 * `(string) $filename` : The filename of a file
 * `(array) $info` : Any information already known about the file (eg content_length, content_type, etc). Default `[]`
+* `(bool) $validate` : Check that the file exists. Default `true`
 
 **Return Values**
 
@@ -58,7 +55,7 @@ Rather obtain an instance from `\SpacesAPI\Space::list()`, `\SpacesAPI\Spaces::f
 
 **Throws Exceptions**
 
-`\SpacesAPI\Exceptions\FileDoesntExistException` : If the file doesn't exist
+`\SpacesAPI\Exceptions\FileDoesntExistException` : If validation is `true` and the file doesn't exist
 
 
 <hr />
