@@ -297,6 +297,12 @@ class Space
         return new File($this, $filename, [], false);
     }
 
+    public function upload(string $filename, $content, string $privacy = 'public-read', array $params = []): File
+    {
+        $this->s3->upload($this->name, $filename, $content, $privacy, $params);
+        return new File($this, $filename, [], false);
+    }
+
     /**
      * Upload a file
      *
