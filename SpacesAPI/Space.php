@@ -288,12 +288,13 @@ class Space
      * @param string $text The text to upload
      * @param string $filename The filepath/name to save to
      * @param array $params Any extra parameters. [See here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#upload-property)
+     * @param bool $private True for the file to be private, false to allow public access
      *
      * @return \SpacesAPI\File
      */
-    public function uploadText(string $text, string $filename, array $params = []): File
+    public function uploadText(string $text, string $filename, array $params = [], bool $private = true): File
     {
-        $this->s3->upload($this->name, $filename, $text, 'private', $params);
+        $this->s3->upload($this->name, $filename, $text, ($private) ? 'private' : 'public-read', $params);
         return new File($this, $filename, [], false);
     }
 

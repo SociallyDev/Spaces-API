@@ -16,10 +16,11 @@ body:
     id: version
     attributes:
       label: Version
-      description: What version of Spaces-API is this occuring on?
+      description: What version of Spaces-API is this occuring on? Versions below 3 will not be fixed. Please upgrade.
       options:
-        - 2.0.1
-        - 2.0.0
+        - 3.2.0
+        - 3.1.0
+        - 3.0.0
     validations:
       required: true
   - type: input

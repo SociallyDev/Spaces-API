@@ -71,6 +71,14 @@ class SpaceTest extends TestCase
     {
         $file = self::$space->uploadText("Lorem ipsum", "lorem-ipsum.txt");
         $this->assertInstanceOf(File::class, $file);
+        $this->assertFalse($file->isPublic());
+    }
+
+    public function testCanPublicUploadText()
+    {
+        $file = self::$space->uploadText("Lorem ipsum", "lorem-ipsum.txt", [], false);
+        $this->assertInstanceOf(File::class, $file);
+        $this->assertTrue($file->isPublic());
     }
 
     public function testCanUploadFile()

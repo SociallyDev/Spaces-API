@@ -33,7 +33,7 @@ foreach ($files['files'] as $file) {
 
 ```php
 $space = new Spaces('api-key', 'api-secret')->space('my-space-name');
-$file = $space->uploadFile('./localfile.txt');
+$file = $space->uploadFile('./localfile.txt', 'remote-filename.txt');
 ```
 [API docs for uploading files](Space.md#spaceuploadfile)
 

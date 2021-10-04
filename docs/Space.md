@@ -492,7 +492,7 @@ Upload a file
 **Description**
 
 ```php
-public uploadText (string $text, string $filename, array $params => [])
+public uploadText (string $text, string $filename, array $params = [], bool $private = true)
 ```
 
 Upload a string of text to file
@@ -507,6 +507,8 @@ Upload a string of text to file
 : The filepath/name to save to
 * `(array) $params`
 : Any extra parameters. [See here](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#upload-property)
+* `(bool) $private`
+: True for the file to be private, false to allow public access
 
 **Return Values**
 
