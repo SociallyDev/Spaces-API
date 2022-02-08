@@ -27,7 +27,7 @@
   },
   "require-dev": {
     "clean/phpdoc-md": "^0.19.1",
-    "phpunit/phpunit": "^9.5",
-    "vlucas/phpdotenv": "^5.3"
+    "phpunit/phpunit": "^9.5.13",
+    "vlucas/phpdotenv": "^v5.4.1"
   }
 }
