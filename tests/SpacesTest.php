@@ -10,21 +10,21 @@ use SpacesAPI\Spaces;
 
 class SpacesTest extends TestCase
 {
+    private static $tempSpaceName;
+
     public static function setUpBeforeClass(): void
     {
         $dotenv = Dotenv::createImmutable(__DIR__ . "/..");
         $dotenv->load();
         $dotenv->required(['SPACES_KEY', 'SPACES_SECRET']);
 
-        try {
-            (new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']))->space('spaces-api-test')->destroy();
-        } catch (SpaceDoesntExistException $e) {
-        }
+        // This should hopefully always be unique amongst all DO spaces
+        self::$tempSpaceName = md5(time());
     }
 
     public static function tearDownAfterClass(): void
     {
-        (new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']))->space('spaces-api-test')->destroy();
+        (new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']))->space(self::$tempSpaceName)->destroy();
     }
 
     public function testAuthenticationCanFail()
@@ -53,7 +53,7 @@ class SpacesTest extends TestCase
      */
     public function testCanCreateSpace(Spaces $spaces)
     {
-        $space = $spaces->create('spaces-api-test');
+        $space = $spaces->create(self::$tempSpaceName);
         $this->assertInstanceOf(Space::class, $space);
 
         return $space;
@@ -69,7 +69,7 @@ class SpacesTest extends TestCase
 
         $spaceFound = false;
         foreach ($list as $name => $space) {
-            if ($name == 'spaces-api-test' && $space->getName() == 'spaces-api-test') {
+            if ($name == self::$tempSpaceName && $space->getName() == self::$tempSpaceName) {
                 $spaceFound = true;
             }
         }

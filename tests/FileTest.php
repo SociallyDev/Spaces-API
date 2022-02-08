@@ -8,6 +8,7 @@ use SpacesAPI\Spaces;
 
 class FileTest extends TestCase
 {
+    private static $tempSpaceName;
     private static $space;
     private static $file;
 
@@ -19,18 +20,15 @@ class FileTest extends TestCase
 
         $spaces = new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']);
 
-        try {
-            $spaces->space('spaces-api-test')->destroy();
-        } catch (SpaceDoesntExistException $e) {
-        }
+        self::$tempSpaceName = md5(time());
 
-        self::$space = $spaces->create('spaces-api-test');
+        self::$space = $spaces->create(self::$tempSpaceName);
         self::$file = self::$space->uploadText('Lorem ipsum', 'lorem-ipsum.txt');
     }
 
     public static function tearDownAfterClass(): void
     {
-        (new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']))->space('spaces-api-test')->destroy();
+        self::$space->destroy();
     }
 
     public function testCanUpdatePrivacy()

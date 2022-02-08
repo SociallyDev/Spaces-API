@@ -9,6 +9,7 @@ use SpacesAPI\Spaces;
 
 class SpaceTest extends TestCase
 {
+    private static $tempSpaceName;
     private static $space;
 
     public static function setUpBeforeClass(): void
@@ -19,17 +20,14 @@ class SpaceTest extends TestCase
 
         $spaces = new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']);
 
-        try {
-            $spaces->space('spaces-api-test')->destroy();
-        } catch (SpaceDoesntExistException $e) {
-        }
+        self::$tempSpaceName = md5(time());
 
-        self::$space = $spaces->create('spaces-api-test');
+        self::$space = $spaces->create(self::$tempSpaceName);
     }
 
     public static function tearDownAfterClass(): void
     {
-//        (new Spaces($_ENV['SPACES_KEY'], $_ENV['SPACES_SECRET']))->space('spaces-api-test')->destroy();
+        self::$space->destroy();
     }
 
     public function testCanUpdateSpacePrivacy()
