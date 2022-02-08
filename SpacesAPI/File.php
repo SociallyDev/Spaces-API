@@ -225,6 +225,19 @@ class File
     }
 
     /**
+     * @param string $newFilename
+     *
+     * @return \SpacesAPI\File
+     */
+    public function move(string $newFilename): File
+    {
+        $newFile = $this->copy($newFilename, $this->isPublic());
+        $this->delete();
+
+        return $newFile;
+    }
+
+    /**
      * Get the public URL
      * This URL will not work if the file is private
      *

@@ -30,6 +30,7 @@ Rather obtain an instance from `\SpacesAPI\Space::list()`, `\SpacesAPI\Spaces::f
 |[isPublic](#fileispublic)|Is this file publicly accessible|
 |[makePrivate](#filemakeprivate)|Make file non-publicly accessible|
 |[makePublic](#filemakepublic)|Make file publicly accessible|
+|[move](#filemove)|Move and/or rename file|
 
 
 
@@ -286,6 +287,30 @@ Make file publicly accessible
 **Return Values**
 
 `void`
+
+
+<hr />
+
+
+### File::move
+
+**Description**
+
+```php
+public move (string $newFilename)
+```
+
+Move or rename a file
+The `File` instance on which you call `move` will become invalid and calling methods on it will result in a `FileDoesntExistException`
+
+
+**Parameters**
+
+* `(string) $newFilename`
+
+**Return Values**
+
+`\SpacesAPI\File` : An instance for the new file
 
 
 <hr />

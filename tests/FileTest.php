@@ -62,6 +62,17 @@ class FileTest extends TestCase
         self::$space->file('lorem-ipsum-2.txt');
     }
 
+    public function testCanMoveRenameFile()
+    {
+        $file = self::$file->copy('test.txt');
+        $file->move('renamed-file.txt');
+
+        $this->assertEquals("Lorem ipsum", self::$space->file('renamed-file.txt')->getContents());
+
+        $this->expectException(FileDoesntExistException::class);
+        self::$space->file('test.txt');
+    }
+
     public function testCanGetURL()
     {
         $this->assertStringContainsString('lorem-ipsum.txt', self::$file->getURL());
