@@ -4,6 +4,8 @@ namespace SpacesAPI;
 
 use SpacesAPI\Exceptions\FileDoesntExistException;
 
+use function PHPUnit\Framework\isNull;
+
 /**
  * Represents a single file
  *
@@ -211,14 +213,14 @@ class File
      *
      * @return \SpacesAPI\File
      */
-    public function copy(string $newFilename, bool $public = false): File
+    public function copy(string $newFilename): File
     {
         $this->s3->copy(
             $this->space_name,
             $this->_filename,
             $this->space_name,
             $newFilename,
-            ($public) ? 'public-read' : 'private'
+            ($this->isPublic()) ? 'public-read' : 'private'
         );
 
         return new self($this->space, $newFilename);
@@ -231,7 +233,7 @@ class File
      */
     public function move(string $newFilename): File
     {
-        $newFile = $this->copy($newFilename, $this->isPublic());
+        $newFile = $this->copy($newFilename);
         $this->delete();
 
         return $newFile;
