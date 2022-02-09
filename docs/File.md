@@ -301,8 +301,7 @@ public move (string $newFilename)
 ```
 
 Move or rename a file
-The `File` instance on which you call `move` will become invalid and calling methods on it will result in a `FileDoesntExistException`
-
+The instance of `File` is now the moved object
 
 **Parameters**
 

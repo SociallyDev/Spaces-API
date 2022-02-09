@@ -67,7 +67,7 @@ class FileTest extends TestCase
         $file = self::$file->copy('test.txt');
         $file->move('renamed-file.txt');
 
-        $this->assertEquals("Lorem ipsum", self::$space->file('renamed-file.txt')->getContents());
+        $this->assertEquals("renamed-file.txt", $file->filename);
 
         $this->expectException(FileDoesntExistException::class);
         self::$space->file('test.txt');

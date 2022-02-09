@@ -233,10 +233,12 @@ class File
      */
     public function move(string $newFilename): File
     {
-        $newFile = $this->copy($newFilename);
+        $this->copy($newFilename);
         $this->delete();
+        $this->_filename = $newFilename;
+        $this->fetchFileInfo();
 
-        return $newFile;
+        return $this;
     }
 
     /**
