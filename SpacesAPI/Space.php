@@ -302,13 +302,13 @@ class Space
      * Upload a file
      *
      * @param string $filepath The path to the file, including the filename. Relative and absolute paths are accepted.
-     * @param string $mimeType The file mime type to pass as ContentType for the file (e.g. 'image/jpeg').
      * @param string|null $filename The remote filename. If `null`, the local filename will be used.
+     * @param string|null $mimeType The file mime type to pass as ContentType for the file (e.g. 'image/jpeg').
      * @param bool $private True for the file to be private, false to allow public access.
      *
      * @return \SpacesAPI\File
      */
-    public function uploadFile(string $filepath, string $mimeType, ?string $filename = null, bool $private = true): File
+    public function uploadFile(string $filepath, ?string $filename = null, ?string $mimeType = null, bool $private = true): File
     {
         $this->s3->putObject([
                                  'Bucket' => $this->name,
