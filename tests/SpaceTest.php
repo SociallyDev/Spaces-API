@@ -86,6 +86,13 @@ class SpaceTest extends TestCase
         $this->assertInstanceOf(File::class, $file);
     }
 
+    public function testCanUploadFileWithMimeType()
+    {
+        $tmpFile = tempnam(sys_get_temp_dir(), 'spaces-test');
+        $file = self::$space->uploadFile($tmpFile, 'upload-test.txt', 'text/plain');
+        $this->assertInstanceOf(File::class, $file);
+    }
+
     /**
      * @depends testCanUploadText
      * @depends testCanUploadFile
