@@ -91,6 +91,7 @@ class SpaceTest extends TestCase
         $tmpFile = tempnam(sys_get_temp_dir(), 'spaces-test');
         $file = self::$space->uploadFile($tmpFile, 'upload-test.txt', 'text/plain');
         $this->assertInstanceOf(File::class, $file);
+        $this->assertEquals('text/plain', $file->content_type);
     }
 
     /**

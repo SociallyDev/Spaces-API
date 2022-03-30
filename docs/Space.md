@@ -463,7 +463,7 @@ Recursively upload an entire directory
 **Description**
 
 ```php
-public uploadFile (string $filepath, string|null $filename = null)
+public uploadFile (string $filepath, string|null $filename = null, string|null $mimeType = null, bool $private = true)
 ```
 
 Upload a file
@@ -476,6 +476,10 @@ Upload a file
 : The path to the file, including the filename. Relative and absolute paths are accepted.
 * `(string|null) $filename`
 : The remote filename. If `null`, the local filename will be used. Default `null`
+* `(string|null) $mimeType`
+: The files mimeType. If `null` the mimeType is inferred from the file by DigitalOcean Spaces. Default `null`
+* `(bool)` $private
+: If `true` then the file is private, if `false` the file is publicly available. Default `true`
 
 **Return Values**
 
