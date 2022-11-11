@@ -325,13 +325,14 @@ class Space
      * Get an instance of \SpacesAPI\File for a given filename
      *
      * @param string $filename
+     * @package bool $validate
      *
      * @return \SpacesAPI\File
      * @throws \SpacesAPI\Exceptions\FileDoesntExistException Thrown if the file doesn't exist
      */
-    public function file(string $filename): File
+    public function file(string $filename, bool $validate = true): File
     {
-        return new File($this, $filename);
+        return new File($this, $filename, [], $validate);
     }
 
     /**

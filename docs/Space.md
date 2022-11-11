@@ -180,7 +180,7 @@ Recursively download an entire directory.
 **Description**
 
 ```php
-public file (string $filename)
+public file (string $filename, bool $validate = true)
 ```
 
 Get an instance of \SpacesAPI\File for a given filename
@@ -190,6 +190,8 @@ Get an instance of \SpacesAPI\File for a given filename
 **Parameters**
 
 * `(string) $filename`
+* `(bool) $validate`
+: Whether to validate the file exits. Defaults to `true`
 
 **Return Values**
 
