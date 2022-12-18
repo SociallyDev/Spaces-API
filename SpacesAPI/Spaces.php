@@ -36,7 +36,7 @@ class Spaces
     {
         $this->s3 = new S3Client([
                                      "version" => "latest",
-                                     "region" => "us-east-1",
+                                     "region" => $region,
                                      "endpoint" => "https://$region.$host",
                                      "credentials" => ["key" => $accessKey, "secret" => $secretKey],
                                      "ua_append" => "SociallyDev-Spaces-API/2",
