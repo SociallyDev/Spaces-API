@@ -32,6 +32,9 @@ $file2url = $file2->getSignedURL("2 hours");
 // Make a copy
 $file3 = $file2->copy('remote-file-3.txt');
 
+// Move or rename a file
+$file2->move('new-filename.txt')
+
 // Make a file public and get the URL
 $file3->makePublic();
 $file3url = $file3->getURL();
