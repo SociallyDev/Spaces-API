@@ -1,6 +1,7 @@
-![Spaces-API](https://imgur.com/NYNsQyl.png "Devang Srivastava's Spaces-API")
+# This library is deprecated
+We recommend using the [official SDK](https://github.com/DigitalOceanPHP/Client) or the [Laravel package](https://github.com/GrahamCampbell/Laravel-DigitalOcean)
 
-PHP library for accessing Digital Ocean spaces
+All issues will be closed and new PRs will not be accepted
 
 ## Installation
 Install via composer
